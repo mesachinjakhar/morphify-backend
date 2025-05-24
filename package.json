@@ -1,9 +1,12 @@
 {
   "name": "morphify-backend",
   "version": "1.0.0",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {},
+  "main": "app.js",
+  "scripts": {
+    "build": "tsc --build",
+    "start": "node ./dist/server.js",
+    "dev": "nodemon ./src/server.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

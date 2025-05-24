@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
+    "types": ["node", "express"],
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "lib": ["ES2022"],
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

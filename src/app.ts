@@ -1,14 +1,17 @@
-import express from "express";
-import dotenv from "dotenv";
-import router from "./routes/index.js";
-import errorHandler from "./middlewares/error-handler.js";
+import app from "./createApp";
 
-dotenv.config();
+process.on("uncaughtException", (err) => {
+  process.exit(1);
+});
 
-const app = express();
+process.on("unhandledRejection", (err) => {
+  server.close(() => {
+    process.exit(1);
+  });
+});
 
-app.use(express.json());
-app.use("/api", router);
-app.use(errorHandler);
+const PORT = process.env.PORT || 3000;
 
-export default app;
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Server is running at http://localhost:${PORT}`);
+});
