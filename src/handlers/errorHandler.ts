@@ -21,12 +21,10 @@ const prodErrors = (res: Response, err: CustomError) => {
   }
   // For non operational error
   else {
-    return res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Something went wrong. Please try again later.",
-      });
+    return res.status(500).json({
+      status: "error",
+      message: "Something went wrong. Please try again later.",
+    });
   }
 };
 
@@ -42,12 +40,12 @@ export default function errorHandler(
   err.status = err.status || "error";
 
   // For development errors
-  if (process.env === "development") {
+  if (process.NODE_ENV === "development") {
     devErrors(res, err);
   }
 
   // For production errors
-  if (process.env === "production") {
+  if (process.NODE_ENV === "production") {
     prodErrors(res, err);
   }
 }
