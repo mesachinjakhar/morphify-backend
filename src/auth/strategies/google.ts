@@ -1,7 +1,6 @@
 import passport from "passport";
 import GoogleTokenStrategy from "passport-google-id-token";
 
-// Add this strategy to passport
 passport.use(
   new GoogleTokenStrategy(
     {
@@ -10,11 +9,12 @@ passport.use(
     },
     function (parsedToken, googleId, done) {
       // This gets called when the token is valid
-      console.log("TOKEN:", parsedToken);
-      console.log("GOOGLE ID:", googleId);
-      const profile = parsedToken.data;
-
-      console.log("Google profile:", profile);
+      // console.log("TOKEN:", parsedToken);
+      // console.log("GOOGLE ID:", googleId);
+      let profile = parsedToken.data;
+      // console.log("Google profile:", profile);
+      profile.provider = "google";
+      profile.id = googleId;
 
       // Example: save to DB, or just return user
       return done(null, profile);

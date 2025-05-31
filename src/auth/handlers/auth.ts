@@ -1,19 +1,52 @@
-import { Request, Response } from "express";
-import { handleSocialLogin } from "../services/auth";
+import { NextFunction, Request, Response } from "express";
+import {
+  handleSocialLogin,
+  resendEmailOtp,
+  sendEmailOtp,
+  verifyEmailOtp,
+} from "../services/auth";
+import asyncErrorHandler from "../../handlers/asyncErrorHandler";
 
-export async function socialAuthHandler(req: Request, res: Response) {
+async function socialAuthHandler(req: Request, res: Response) {
   if (req.user) {
-    return res
-      .status(201)
-      .json({ message: "Authentication succeed", user: req.user });
+    const response = await handleSocialLogin(req.user);
+    return res.status(201).json({
+      status: "success",
+      message: "authentication succeed",
+      data: response,
+    });
+  } else {
+    return res.status(400).json({
+      status: "fail",
+      message: "authentication failed. no user profile found",
+    });
   }
-  if (!req.user) {
-    return res.status(401).json({ message: "Authentication failed" });
-  }
-
-  // return req.user;
-
-  // const user = await handleSocialLogin(req.user);
-  // //   return res.json({ user, token: "your-jwt-token-here" }); // Create JWT later
-  // return user;
 }
+
+export const emailAuthHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const type = req.body.type;
+  const email = req.body.email;
+
+  if (type === "login") {
+    const response = await sendEmailOtp(email);
+    res.status(200).json(response);
+  } else if (type === "resend") {
+    const response = await resendEmailOtp(email);
+    res.status(200).json(response);
+  } else if (type === "verify") {
+    const response = await verifyEmailOtp(email, req.body.otp);
+    res.status(200).json(response);
+  } else {
+    res.status(400).json({
+      status: "fail",
+      type: "unknown",
+      message: "Request type not defined",
+    });
+  }
+};
+
+export default asyncErrorHandler(socialAuthHandler);

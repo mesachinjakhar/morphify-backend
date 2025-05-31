@@ -1,6 +1,6 @@
 import { Router } from "express";
 import passport from "passport";
-import { socialAuthHandler } from "../handlers/auth";
+import socialAuthHandler, { emailAuthHandler } from "../handlers/auth";
 
 const router = Router();
 
@@ -9,5 +9,7 @@ router.post(
   passport.authenticate("google-id-token", { session: false }),
   socialAuthHandler
 );
+
+router.post("/email", emailAuthHandler);
 
 export default router;
