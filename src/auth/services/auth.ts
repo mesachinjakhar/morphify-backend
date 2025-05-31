@@ -74,7 +74,7 @@ export async function sendEmailOtp(email: string) {
     return {
       status: "fail",
       type: "login",
-      message: `Email already registered via ${user.provider.toLowerCase()}. Use that login method.`,
+      message: `Account already registered via ${user.provider.toUpperCase()}. Use that login method.`,
     };
   }
 
