@@ -3,14 +3,12 @@ import { Provider } from "@prisma/client";
 import CustomError from "../../utils/CustomError";
 import { validateEmail } from "../utils/validateEmail";
 import isEligibleForOtp from "../utils/isEligibleForOtp";
+import generateOtp from "../utils/generateOtp";
 
 export async function handleSocialLogin(profile: any) {
   console.log("profile recieved : ", profile);
 
   const email = profile.email;
-  if (!email) {
-    throw new CustomError("Email not found in profile", 400);
-  }
 
   const existingUser = await prisma.user.findUnique({
     where: { email },
@@ -20,14 +18,18 @@ export async function handleSocialLogin(profile: any) {
 
   if (existingUser) {
     if (existingUser.provider !== normalizedProvider) {
-      throw new CustomError(
-        `Account exists with ${existingUser.provider} login. Please use that method to sign in.`,
-        400
-      );
+      return {
+        status: "fail",
+        message: `Account already registered via ${existingUser.provider}. Use that login method.`,
+      };
     }
 
     // User exists and provider matches
-    return existingUser;
+    return {
+      status: "success",
+      message: "authentication succed",
+      data: existingUser,
+    };
   }
 
   // Create new user if not found
@@ -40,7 +42,11 @@ export async function handleSocialLogin(profile: any) {
     },
   });
 
-  return newUser;
+  return {
+    status: "success",
+    message: "authentication succed",
+    data: newUser,
+  };
 }
 
 export async function sendEmailOtp(email: string) {
@@ -53,20 +59,51 @@ export async function sendEmailOtp(email: string) {
     };
   }
 
-  const response = await isEligibleForOtp(email);
-  if (response) {
-    return {
-      status: "success",
-      type: "login",
-      message: "otp sent successfully",
-    };
-  } else {
+  const eligible = await isEligibleForOtp(email);
+  if (!eligible) {
     return {
       status: "fail",
       type: "login",
       message: "Too many OTP requests. Please try again later.",
     };
   }
+
+  let user = await prisma.user.findUnique({ where: { email } });
+
+  if (user && user.provider !== Provider.EMAIL) {
+    return {
+      status: "fail",
+      type: "login",
+      message: `Email already registered via ${user.provider.toLowerCase()}. Use that login method.`,
+    };
+  }
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email,
+        provider: "EMAIL",
+      },
+    });
+  }
+
+  // Generate OTP and expiry
+  const { otp, otpExpiresAt } = generateOtp();
+
+  // Update user with OTP and expiry
+  await prisma.user.update({
+    where: { email },
+    data: {
+      otp,
+      otpExpiresAt,
+    },
+  });
+
+  return {
+    status: "success",
+    type: "login",
+    message: "OTP sent successfully",
+  };
 }
 
 export async function resendEmailOtp(email: string) {

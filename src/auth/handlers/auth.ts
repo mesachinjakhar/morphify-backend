@@ -10,13 +10,14 @@ import asyncErrorHandler from "../../handlers/asyncErrorHandler";
 async function socialAuthHandler(req: Request, res: Response) {
   if (req.user) {
     const response = await handleSocialLogin(req.user);
-    return res.status(201).json({
-      status: "success",
-      message: "authentication succeed",
-      data: response,
-    });
+    if (response.status === "success") {
+      return res.status(201).json(response);
+    }
+    if (response.status === "fail") {
+      return res.status(200).json(response);
+    }
   } else {
-    return res.status(400).json({
+    return res.status(200).json({
       status: "fail",
       message: "authentication failed. no user profile found",
     });
