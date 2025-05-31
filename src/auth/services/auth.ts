@@ -70,11 +70,29 @@ export async function sendEmailOtp(email: string) {
 }
 
 export async function resendEmailOtp(email: string) {
-  return {
-    status: "success",
-    type: "resend",
-    message: "otp re-sent successfully",
-  };
+  const isEmail = validateEmail(email);
+  if (!isEmail) {
+    return {
+      status: "fail",
+      type: "resend",
+      message: "invalid email address",
+    };
+  }
+
+  const response = await isEligibleForOtp(email);
+  if (response) {
+    return {
+      status: "success",
+      type: "resend",
+      message: "otp re-sent successfully",
+    };
+  } else {
+    return {
+      status: "fail",
+      type: "resend",
+      message: "Too many OTP requests. Please try again later.",
+    };
+  }
 }
 
 export async function verifyEmailOtp(email: string, otp: string) {

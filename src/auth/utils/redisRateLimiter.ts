@@ -7,5 +7,5 @@ export const otpRateLimiter = new RateLimiterRedis({
   keyPrefix: "otp_rate_limit",
   points: 5, // 5 requests
   duration: 60 * 60, // per hour
-  blockDuration: 60, // block for 1 minute after exceeding
+  blockDuration: 300, // block for 5 minute after exceeding
 });

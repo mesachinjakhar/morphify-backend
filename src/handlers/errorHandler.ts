@@ -40,12 +40,12 @@ export default function errorHandler(
   err.status = err.status || "error";
 
   // For development errors
-  if (process.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === "development") {
     devErrors(res, err);
   }
 
   // For production errors
-  if (process.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "production") {
     prodErrors(res, err);
   }
 }
