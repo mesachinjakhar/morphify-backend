@@ -36,6 +36,7 @@ model Model {
   ethinicity EthinicityEnum
   eyeColor EyeColorEnum
   bald Boolean
+  userId String
   trainingImages TrainingImages[]
   outputImages OutputImages[]
   createdAt DateTime @default(now())
@@ -51,12 +52,20 @@ model TrainingImages {
 
 model OutputImages {
   id String @id @default(uuid())
-  imageUrl String
+  imageUrl String @default("")
   modelId String
   userId String
+  prompt String
+  status OutputImageStatusEnum @default(PENDING)
   model Model @relation(fields: [modelId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum OutputImageStatusEnum {
+  PENDING
+  GENERATED
+  FAILED
 }
 
 model Packs {
@@ -89,11 +98,11 @@ enum ModelTypeEnum {
 enum EthinicityEnum {
     WHITE
     BLACK
-    ASIANAMERICAN
-    EASTASIAN
-    SOUTHEASTASIAN
-    SOUTHASIAN
-    MIDDLEEASTERN
+    ASIAN_AMERICAN
+    EAST_ASIAN
+    SOUTH_EAST_ASIAN
+    SOUTH_ASIAN
+    MIDDLE_EASTERN
     PACIFIC
     HISPANIC
 }
