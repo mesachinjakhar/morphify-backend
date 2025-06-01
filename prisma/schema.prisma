@@ -28,6 +28,12 @@ model User {
   updatedAt     DateTime @updatedAt
 }
 
+enum ModelTrainingStatusEnum {
+  PENDING
+  GENERATED
+  FAILED
+}
+
 model Model {
   id String @id @default(uuid())
   name String
@@ -37,10 +43,15 @@ model Model {
   eyeColor EyeColorEnum
   bald Boolean
   userId String
+  triggerWord String?
+  tensorPath String?
+  trainingStatus ModelTrainingStatusEnum @default(PENDING)
   trainingImages TrainingImages[]
   outputImages OutputImages[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  falAiRequestId String?
+  @@index([falAiRequestId])
 }
 
 model TrainingImages {
@@ -56,10 +67,13 @@ model OutputImages {
   modelId String
   userId String
   prompt String
+  falAiRequestId String?
   status OutputImageStatusEnum @default(PENDING)
   model Model @relation(fields: [modelId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@index([falAiRequestId])
+
 }
 
 enum OutputImageStatusEnum {
