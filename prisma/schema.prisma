@@ -28,6 +28,50 @@ model User {
   updatedAt     DateTime @updatedAt
 }
 
+model Model {
+  id String @id @default(uuid())
+  name String
+  type ModelTypeEnum
+  age Int
+  ethinicity EthinicityEnum
+  eyeColor EyeColorEnum
+  bald Boolean
+  trainingImages TrainingImages[]
+  outputImages OutputImages[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TrainingImages {
+  id String @id @default(uuid())
+  imageUrl String
+  modelId String
+  model Model @relation(fields: [modelId], references: [id])
+}
+
+model OutputImages {
+  id String @id @default(uuid())
+  imageUrl String
+  modelId String
+  userId String
+  model Model @relation(fields: [modelId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Packs {
+  id String @id @default(uuid())
+  name String
+  prompts PackPrompts[]
+}
+
+model PackPrompts {
+  id String @id @default(uuid())
+  prompt String
+  packId String
+  pack Packs @relation(fields: [packId], references: [id])
+}
+
 enum Provider {
   GOOGLE
   FACEBOOK
@@ -36,3 +80,28 @@ enum Provider {
 }
 
 
+enum ModelTypeEnum {
+  MAN
+  WOMEN
+  OTHER
+}
+
+enum EthinicityEnum {
+    WHITE
+    BLACK
+    ASIANAMERICAN
+    EASTASIAN
+    SOUTHEASTASIAN
+    SOUTHASIAN
+    MIDDLEEASTERN
+    PACIFIC
+    HISPANIC
+}
+
+enum EyeColorEnum {
+  BLACK
+  BLUE
+  GREY
+  BROWN 
+  HAZEL
+}
