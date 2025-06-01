@@ -8,6 +8,9 @@ import {
 } from "../types/trainModel";
 
 import { FalAIModel } from "../models/FalAIModel";
+import s3 from "../config/s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const falAiClient = new FalAIModel();
 
@@ -28,7 +31,7 @@ router.post("/training", async (req, res) => {
   }
 
   const { request_id, response_url } = await falAiClient.trainModel(
-    "",
+    parsedBody.data.zipUrl,
     parsedBody.data.name
   );
 
@@ -42,6 +45,7 @@ router.post("/training", async (req, res) => {
       bald: parsedBody.data.bald,
       userId: USER_ID,
       falAiRequestId: request_id,
+      zipUrl: parsedBody.data.zipUrl,
     },
   });
   res.json({
@@ -182,6 +186,31 @@ router.post("/fal-ai/webhook/image", async (req, res) => {
 
   res.json({
     message: "webhook recieved",
+  });
+});
+
+router.get("/pre-signed-url", async (req, res) => {
+  const key = `models/${Date.now()}_${Math.random()}.zip`;
+
+  const command = new PutObjectCommand({
+    Bucket: process.env.BUCKET_NAME,
+    Key: key,
+    ContentType: "application/zip",
+  });
+
+  const url = await getSignedUrl(s3, command, { expiresIn: 300 });
+
+  // Generate pre-signed URL for PUT
+
+  // const url = await s3.getSignedUrl("putObject", {
+  //   Bucket: process.env.BUCKET_NAME,
+  //   Key: key,
+  //   ContentType: "application/zip",
+  //   Expires: 300,
+  // });
+  res.json({
+    url: url,
+    key: key,
   });
 });
 
