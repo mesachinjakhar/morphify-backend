@@ -39,7 +39,7 @@ model Model {
   name String
   type ModelTypeEnum
   age Int
-  ethinicity EthinicityEnum
+  ethnicity EthnicityEnum
   eyeColor EyeColorEnum
   bald Boolean
   userId String
@@ -110,7 +110,7 @@ enum ModelTypeEnum {
   OTHER
 }
 
-enum EthinicityEnum {
+enum EthnicityEnum {
     WHITE
     BLACK
     ASIAN_AMERICAN

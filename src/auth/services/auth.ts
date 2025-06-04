@@ -5,6 +5,9 @@ import { validateEmail } from "../utils/validateEmail";
 import isEligibleForOtp from "../utils/isEligibleForOtp";
 import generateOtp from "../utils/generateOtp";
 import { isBefore } from "date-fns"; // for checking expiry
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function handleSocialLogin(profile: any) {
   console.log("profile recieved : ", profile);
@@ -25,11 +28,13 @@ export async function handleSocialLogin(profile: any) {
       };
     }
 
+    const jwtToken = jwt.sign(existingUser, JWT_SECRET);
     // User exists and provider matches
     return {
       status: "success",
       message: "authentication succed",
       data: existingUser,
+      jwtToken: jwtToken,
     };
   }
 
@@ -43,10 +48,13 @@ export async function handleSocialLogin(profile: any) {
     },
   });
 
+  const jwtToken = jwt.sign(newUser, JWT_SECRET);
+
   return {
     status: "success",
     message: "authentication succed",
     data: newUser,
+    jwtToken: jwtToken,
   };
 }
 
@@ -230,6 +238,7 @@ export async function verifyEmailOtp(email: string, otp: string) {
     },
   });
 
+  const jwtToken = jwt.sign(user, JWT_SECRET);
   // You might also generate a session/token here
 
   return {
@@ -237,5 +246,6 @@ export async function verifyEmailOtp(email: string, otp: string) {
     type: "verify",
     message: "OTP verified successfully",
     data: user,
+    jwtToken,
   };
 }
