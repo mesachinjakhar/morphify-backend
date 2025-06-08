@@ -68,7 +68,7 @@ model OutputImages {
   modelId String
   userId String
   prompt String
-  falAiRequestId String?
+  falAiRequestId String
   status OutputImageStatusEnum @default(PENDING)
   model Model @relation(fields: [modelId], references: [id])
   createdAt DateTime @default(now())

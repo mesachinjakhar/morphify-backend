@@ -29,6 +29,7 @@ export async function handleSocialLogin(profile: any) {
     }
 
     const jwtToken = jwt.sign(existingUser, JWT_SECRET);
+    console.log("JWT TOKEN: ", jwtToken);
     // User exists and provider matches
     return {
       status: "success",

@@ -14,8 +14,7 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import authMiddleware from "../middlewares/authMiddleware";
 import createUniqueTriggerWord from "../utils/createUniqueTriggerWord";
-import selectRandomPrompts from "@/utils/selectRandomPrompt";
-import selectRandomPrompt from "@/utils/selectRandomPrompt";
+import selectRandomPrompt from "../utils/selectRandomPrompt";
 
 const falAiClient = new FalAIModel();
 
