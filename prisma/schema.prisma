@@ -43,7 +43,7 @@ model Model {
   eyeColor EyeColorEnum
   bald Boolean
   userId String
-  triggerWord String?
+  triggerWord String
   tensorPath String?
   trainingStatus ModelTrainingStatusEnum @default(PENDING)
   trainingImages TrainingImages[]
@@ -87,13 +87,21 @@ model Packs {
   id String @id @default(uuid())
   name String
   prompts PackPrompts[]
+  tumbnail String
+  gallary String[]
+  description String
+  createdAt DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model PackPrompts {
   id String @id @default(uuid())
   prompt String
   packId String
+  type String @default("unknown")
   pack Packs @relation(fields: [packId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 enum Provider {

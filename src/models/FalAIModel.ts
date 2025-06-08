@@ -6,13 +6,21 @@ export class FalAIModel extends BaseModel {
     super();
   }
 
-  public async generateImage(prompt: string, tensorPath: string) {
+  public async generateImage(
+    prompt: string,
+    tensorPath: string,
+    numOfImages: number
+  ) {
     const { request_id, response_url } = await fal.queue.submit(
       "fal-ai/flux-lora",
       {
         input: {
           prompt: prompt,
           loras: [{ path: tensorPath, scale: 1 }],
+          num_images: numOfImages,
+          image_size: "square_hd",
+          output_format: "png",
+          enable_safety_checker: true,
         },
         webhookUrl: `${process.env.WEBHOOK_BASE_URL}/ai-photos/fal-ai/webhook/image`,
       }

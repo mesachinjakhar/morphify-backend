@@ -29,4 +29,5 @@ export const GenerateImage = z.object({
 export const GenerateImagesFromPack = z.object({
   modelId: z.string(),
   packId: z.string(),
+  num: z.number(),
 });

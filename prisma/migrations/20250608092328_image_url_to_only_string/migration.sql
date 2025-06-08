@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "OutputImages" ALTER COLUMN "imageUrl" SET NOT NULL,
+ALTER COLUMN "imageUrl" SET DEFAULT '',
+ALTER COLUMN "imageUrl" SET DATA TYPE TEXT;
