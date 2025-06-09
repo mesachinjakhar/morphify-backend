@@ -36,7 +36,7 @@ export class FalAIModel extends BaseModel {
           images_data_url: zipUrl,
           trigger_word: triggerWord,
         },
-        webhookUrl: `${process.env.WEBHOOK_BASE_URL}/ai-photos/fal-ai/webhook/train`,
+        webhookUrl: `https://morphify.botcmd.com/api/ai-photos/fal-ai/webhook/train`,
       }
     );
     return { request_id, response_url };

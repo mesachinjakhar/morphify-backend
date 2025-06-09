@@ -1,0 +1,63 @@
+# .github/workflows/deploy.yml
+
+# Name of the workflow, which will be displayed in the "Actions" tab of your GitHub repository.
+name: Deploy to Production Server
+
+# Controls when the workflow will run.
+# This workflow triggers on a push event but only for the "main" branch.
+on:
+  push:
+    branches:
+      - main
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel.
+jobs:
+  # This workflow contains a single job called "deploy"
+  deploy:
+    # The type of runner that the job will run on. We use the latest Ubuntu version.
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job.
+    steps:
+      # Step 1: Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it.
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js. This is good practice for CI, allowing you to run tests or build steps.
+      # You can specify the Node.js version you use in your project.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20" # Change this to your Node.js version
+
+      # (Optional but Recommended) Step 3: Install dependencies and run tests.
+      # This is the "CI" part. If tests fail, the deployment will stop, preventing bugs from reaching production.
+      - name: Install Dependencies & Run Tests
+        run: |
+          npm install
+          npm test # If you have tests, run them here. If not, you can remove this line.
+
+      # Step 4: The actual deployment step.
+      # This uses a popular community action to SSH into your server and run commands.
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          # We are using the secrets we created in the GitHub repository settings.
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22 # Default SSH port, change if yours is different
+
+          # The script that will be executed on your server.
+          # It navigates to your project directory, pulls the latest changes,
+          # installs dependencies, and reloads the app using PM2.
+          script: |
+            echo "--- Starting Deployment ---"
+            cd ${{ secrets.PROJECT_PATH }}
+            echo "1. Pulling latest code from main branch..."
+            git pull origin main
+            echo "2. Installing/updating npm dependencies..."
+            npm install --production # --production flag avoids installing devDependencies
+            echo "3. Reloading the application with PM2..."
+            pm2 reload my-api # Use "reload" for zero-downtime, or "restart" if needed. Change "my-api" to your PM2 app name.
+            echo "--- Deployment Successful ---"

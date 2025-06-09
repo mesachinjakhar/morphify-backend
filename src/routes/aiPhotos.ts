@@ -293,11 +293,13 @@ router.post("/fal-ai/webhook/train", async (req, res) => {
 });
 
 router.post("/fal-ai/webhook/image", async (req, res) => {
+  console.log("webhook called with body:", req.body);
   const requestId = req.body.request_id;
-  const images = req.body.images;
+  const images = req.body.payload.images;
 
   // Basic validation of the incoming webhook payload
   if (!requestId || !Array.isArray(images) || images.length === 0) {
+    console.log("invalid webook call");
     res.status(400).json({ message: "Invalid webhook payload" });
     return;
   }
