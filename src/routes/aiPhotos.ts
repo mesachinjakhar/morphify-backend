@@ -40,11 +40,8 @@ router.post("/training", authMiddleware, async (req, res) => {
     throw new Error("Cant find user");
   }
 
-  console.log("Authenticated User:", user);
-
   // Step 3: Create a trigger word for Model creation
   const triggerWord = createUniqueTriggerWord(parsedBody.data.name);
-  console.log("trigger word: ", triggerWord);
 
   // Step 4: Send request to Fal Ai for Model Generation
   const { request_id, response_url } = await falAiClient.trainModel(
@@ -184,7 +181,6 @@ router.post("/pack/generate", async (req, res) => {
   // Step 7. Construct the full prompt.
   // Combine the trigger word, the user's prompt, and other details for best results.
   const fullPrompt = `photo of ${model.triggerWord}, a ${model.age}-year-old ${model.ethnicity}, ${selectedPrompt.prompt}`;
-  console.log("Constructed Full Prompt:", fullPrompt);
 
   // Step 8. Send request to fal.ai for image generation
   const generationRequest = await falAiClient.generateImage(
@@ -252,7 +248,6 @@ router.get("/pack/bulk", async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error("Failed to fetch packs:", error);
     res.status(500).json({
       status: "error",
       message: "An internal server error occurred.",
