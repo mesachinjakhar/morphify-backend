@@ -35,7 +35,11 @@ router.post("/training", authMiddleware, async (req, res) => {
   }
 
   // Step 2: Extract the authenticated user from req header
-  const user = req.user;
+  const user = req.user as { id: string };
+  if (!user || !user.id) {
+    throw new Error("Cant find user");
+  }
+
   console.log("Authenticated User:", user);
 
   // Step 3: Create a trigger word for Model creation
@@ -168,7 +172,7 @@ router.post("/pack/generate", async (req, res) => {
   }
 
   // Step 6. Randomly Select {imagesToBeGenerated} Prompts using the new function
-  const selectedPrompt = selectRandomPrompt(allPrompts);
+  const selectedPrompt = selectRandomPrompt(allPrompts) as { prompt: string };
 
   if (!selectedPrompt) {
     res.status(404).json({
@@ -215,9 +219,9 @@ router.post("/pack/generate", async (req, res) => {
 router.get("/pack/bulk", async (req: Request, res: Response) => {
   // --- Pagination Logic ---
   // Set a default limit for items per page, e.g., 10.
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit as string | "10");
   // Get the page number from the query, default to page 1.
-  const page = parseInt(req.query.page) || 1;
+  const page = parseInt(req.query.page as string | "1");
   // Calculate the number of items to skip.
   const skip = (page - 1) * limit;
 

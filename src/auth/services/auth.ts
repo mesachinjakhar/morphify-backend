@@ -10,6 +10,10 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function handleSocialLogin(profile: any) {
+  if (!JWT_SECRET) {
+    // This stops the app from crashing and gives a clear error
+    throw new Error("JWT_SECRET is not defined in the environment variables.");
+  }
   console.log("profile recieved : ", profile);
 
   const email = profile.email;
@@ -173,6 +177,10 @@ export async function resendEmailOtp(email: string) {
 }
 
 export async function verifyEmailOtp(email: string, otp: string) {
+  if (!JWT_SECRET) {
+    // This stops the app from crashing and gives a clear error
+    throw new Error("JWT_SECRET is not defined in the environment variables.");
+  }
   if (!email) {
     return {
       status: "fail",

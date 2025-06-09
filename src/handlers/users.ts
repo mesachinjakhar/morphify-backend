@@ -59,6 +59,17 @@ export const getImageStatus = async (
       return;
     }
 
+    // --- Start of Fix ---
+    // This new check ensures falAiRequestId is present AND is a string
+    if (!falAiRequestId || typeof falAiRequestId !== "string") {
+      res.status(400).json({
+        status: "fail",
+        message:
+          "A single, valid Fal AI Request ID must be provided as a query parameter.",
+      });
+      return;
+    }
+
     if (!falAiRequestId) {
       // Return a 400 Bad Request error if the request ID is missing from params.
       res

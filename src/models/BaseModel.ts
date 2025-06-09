@@ -1,5 +1,9 @@
 export abstract class BaseModel {
   constructor() {}
-  private async generateImage(prompt: string, tensorPath: string) {}
-  private async trainModel(inputImages: string[], triggerWord: string) {}
+  public async generateImage(
+    prompt: string,
+    tensorPath: string,
+    numOfImages: number
+  ): Promise<any> {}
+  public async trainModel(zipUrl: string, triggerWord: string): Promise<any> {}
 }
