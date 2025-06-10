@@ -18,8 +18,7 @@ async function downloadAndUploadImage(
 
     // 2. Generate a unique file name to avoid collisions
     const timestamp = Date.now();
-    const uniqueFileName = `${requestId}-${index}-${timestamp}.${extension}`;
-
+    const uniqueFileName = `/generated-images/${requestId}-${index}-${timestamp}.${extension}`;
     // 3. Prepare the upload command for S3
     const uploadCommand = new PutObjectCommand({
       Bucket: process.env.BUCKET_NAME,
