@@ -18,7 +18,7 @@ app.use(passport.initialize());
 // Routes
 app.get("/", (req, res) => {
   console.log("request received");
-  res.json({ success: "yes" });
+  res.json({ success: "yes 2" });
 });
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
