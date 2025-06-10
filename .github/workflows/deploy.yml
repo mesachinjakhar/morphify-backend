@@ -52,12 +52,19 @@ jobs:
           # It navigates to your project directory, pulls the latest changes,
           # installs dependencies, and reloads the app using PM2.
           script: |
-            echo "--- Starting Deployment ---"
+          echo "--- Starting TypeScript Deployment ---"
             cd ${{ secrets.PROJECT_PATH }}
+            
             echo "1. Pulling latest code from main branch..."
             git pull origin main
-            echo "2. Installing/updating npm dependencies..."
-            npm install --production # --production flag avoids installing devDependencies
-            echo "3. Reloading the application with PM2..."
-            pm2 reload my-api # Use "reload" for zero-downtime, or "restart" if needed. Change "my-api" to your PM2 app name.
+            
+            echo "2. Installing all npm dependencies..."
+            npm install # Not --production, as you need devDependencies like 'typescript' to build
+            
+            echo "3. Building the TypeScript project..."
+            npm run build # This compiles .ts files to .js in a 'dist' or 'build' folder
+            
+            echo "4. Reloading the application with PM2..."
+            pm2 reload morphify # This reloads the running .js file
+            
             echo "--- Deployment Successful ---"
