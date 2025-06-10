@@ -35,7 +35,6 @@ jobs:
       - name: Install Dependencies & Run Tests
         run: |
           npm install
-          npm test # If you have tests, run them here. If not, you can remove this line.
 
       # Step 4: The actual deployment step.
       # This uses a popular community action to SSH into your server and run commands.
