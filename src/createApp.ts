@@ -16,9 +16,9 @@ app.use(express.json());
 app.use(passport.initialize());
 
 // Routes
-app.get("/", (req, res) => {
+app.get("/ping", (req, res) => {
   console.log("request received");
-  res.json({ success: "yes 2" });
+  res.send("pong");
 });
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
