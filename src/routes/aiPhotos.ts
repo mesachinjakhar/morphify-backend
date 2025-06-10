@@ -276,6 +276,7 @@ router.get("/image/bulk", async (req, res) => {
 });
 
 router.post("/fal-ai/webhook/train", async (req, res) => {
+  console.log("train webhook called with body:", req.body);
   const requestId = req.body.request_id;
 
   await prisma.model.updateMany({
