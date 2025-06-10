@@ -15,6 +15,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import authMiddleware from "../middlewares/authMiddleware";
 import createUniqueTriggerWord from "../utils/createUniqueTriggerWord";
 import selectRandomPrompt from "../utils/selectRandomPrompt";
+import downloadAndUploadImage from "../utils/downloadAndUploadImage";
 
 const falAiClient = new FalAIModel();
 
@@ -321,6 +322,14 @@ router.post("/fal-ai/webhook/image", async (req, res) => {
     return;
   }
 
+  // Step 3. Process all images concurrently (download from Fal, upload to R2)
+  const uploadPromises: Promise<string>[] = images.map((image, index) =>
+    downloadAndUploadImage(image.url, requestId, index)
+  );
+
+  // This resolves to an array of strings
+  const newImageUrls = await Promise.all(uploadPromises);
+
   // Step 3. Create an array of individual update promises
   const updatePromises = imageRecordsToUpdate.map((record, index) => {
     return prisma.outputImages.update({
@@ -329,7 +338,7 @@ router.post("/fal-ai/webhook/image", async (req, res) => {
       },
       data: {
         status: "GENERATED",
-        imageUrl: images[index].url, // Assign the correct URL from the array
+        imageUrl: newImageUrls[index], // Assign the correct URL from the array
       },
     });
   });

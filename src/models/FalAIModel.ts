@@ -22,7 +22,7 @@ export class FalAIModel extends BaseModel {
           output_format: "png",
           enable_safety_checker: true,
         },
-        webhookUrl: `${process.env.WEBHOOK_BASE_URL}/ai-photos/fal-ai/webhook/image`,
+        webhookUrl: `https://fbe6-2409-40f2-1c-e9af-6da1-c579-3eb8-39bb.ngrok-free.app/ai-photos/fal-ai/webhook/image`,
       }
     );
     return { request_id, response_url };
@@ -36,7 +36,7 @@ export class FalAIModel extends BaseModel {
           images_data_url: zipUrl,
           trigger_word: triggerWord,
         },
-        webhookUrl: `https://morphify.botcmd.com/api/ai-photos/fal-ai/webhook/train`,
+        webhookUrl: `https://fbe6-2409-40f2-1c-e9af-6da1-c579-3eb8-39bb.ngrok-free.app/api/ai-photos/fal-ai/webhook/train`,
       }
     );
     return { request_id, response_url };
