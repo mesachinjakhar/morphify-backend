@@ -22,7 +22,7 @@ export class FalAIModel extends BaseModel {
           output_format: "png",
           enable_safety_checker: true,
         },
-        webhookUrl: `https://morphify.botcmd.com/ai-photos/fal-ai/webhook/image`,
+        webhookUrl: `https://morphify.botcmd.com/api/ai-photos/fal-ai/webhook/image`,
       }
     );
     return { request_id, response_url };
