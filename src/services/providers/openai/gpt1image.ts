@@ -75,7 +75,16 @@ export class Gpt1ImageProvider implements IProvider {
       form.append("image", imageBuffer, { filename: "input_image.png" });
       form.append(
         "prompt",
-        "A beautiful anime style image in the style of Studio Ghibli. The image should have the characteristic hand-painted look, soft lighting, lush backgrounds, and expressive, rounded character features. High detail."
+        `Transform the provided image into a beautiful, high-detail anime illustration in the distinct style of Studio Ghibli.
+
+Scene and Style:
+Recreate the entire scene with a hand-painted aesthetic, soft and atmospheric lighting, and lush, richly detailed backgrounds (whether nature or cityscape). Match the composition of the original image exactly.
+
+Subject Instructions:
+
+If a person is present in the original image: Convert them into a character with expressive, Ghibli-style features. It is critical to strictly maintain the original pose, facial expression, and attire, adapting them faithfully to the anime style.
+
+If no person is present in the original image: Do not add a character. The illustration must only depict the original scene and objects, fully rendered in the Ghibli style. Focus entirely on the environment.`
       );
       form.append("n", "1");
       form.append("size", "1024x1024");

@@ -56,4 +56,4 @@ jobs:
             npm install 
             npx prisma migrate dev --name sync tables
             npm run build 
-            pm2 reload app worker image.worker
+            pm2 reload ecosystem.config.js
