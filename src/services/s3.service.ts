@@ -18,7 +18,11 @@ import s3 from "../config/s3";
 // The SDK will automatically pick up credentials from environment variables
 // (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY).
 
-const BUCKET_NAME = process.env.BUCKET_NAME;
+let BUCKET_NAME = process.env.BUCKET_NAME;
+
+if (!BUCKET_NAME) {
+  BUCKET_NAME = "morphify";
+}
 
 if (!BUCKET_NAME) {
   throw new Error("AWS_S3_BUCKET_NAME environment variable is not set.");
