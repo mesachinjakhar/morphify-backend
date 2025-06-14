@@ -195,7 +195,7 @@ router.post("/pack/generate", async (req, res) => {
   const imagesData = Array.from({ length: imagesToBeGenerated }).map(() => ({
     prompt: selectedPrompt.prompt, // Using the same selected prompt for the whole batch
     userId: model.userId,
-    modelId: parsedBody.data.modelId,
+    userModelId: parsedBody.data.modelId,
     imageUrl: "", // To be updated later via webhook or polling
     providerRequestId: generationRequest.request_id,
   }));
