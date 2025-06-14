@@ -307,9 +307,9 @@ router.post("/fal-ai/webhook/image", async (req, res) => {
   }
 
   // Step 1. Fetch all the placeholder records created for this request
-  const imageRecordsToUpdate = await prisma.outputImages.findMany({
+  const imageRecordsToUpdate = await prisma.generatedImages.findMany({
     where: {
-      falAiRequestId: requestId,
+      providerRequestId: requestId,
       status: { not: "GENERATED" }, // Optional: prevent re-processing a webhook
     },
   });
@@ -333,7 +333,7 @@ router.post("/fal-ai/webhook/image", async (req, res) => {
 
   // Step 3. Create an array of individual update promises
   const updatePromises = imageRecordsToUpdate.map((record, index) => {
-    return prisma.outputImages.update({
+    return prisma.generatedImages.update({
       where: {
         id: record.id, // Update each record by its unique primary key
       },
