@@ -197,11 +197,11 @@ router.post("/pack/generate", async (req, res) => {
     userId: model.userId,
     modelId: parsedBody.data.modelId,
     imageUrl: "", // To be updated later via webhook or polling
-    falAiRequestId: generationRequest.request_id,
+    providerRequestId: generationRequest.request_id,
   }));
 
   // Use `createMany` for a single, efficient bulk database insert.
-  const creationResult = await prisma.outputImages.createMany({
+  const creationResult = await prisma.generatedImages.createMany({
     data: imagesData,
   });
 
@@ -209,7 +209,7 @@ router.post("/pack/generate", async (req, res) => {
   res.json({
     status: "success",
     message: `${creationResult.count} image generation tasks have been queued.`,
-    falAiRequestId: generationRequest.request_id,
+    jobId: generationRequest.request_id,
   });
 });
 
@@ -355,8 +355,16 @@ router.post("/fal-ai/webhook/image", async (req, res) => {
 });
 
 router.get("/pre-signed-url", authMiddleware, async (req, res) => {
+  const type = req.query.type;
+  const fileType = req.query.fileType;
+
   try {
-    const key = `models/${Date.now()}_${Math.random()}.zip`;
+    let key;
+    if (type == "image") {
+      key = `images/${Date.now()}_${Math.random()}.${fileType}`;
+    } else {
+      key = `models/${Date.now()}_${Math.random()}.zip`;
+    }
 
     const command = new PutObjectCommand({
       Bucket: process.env.BUCKET_NAME,

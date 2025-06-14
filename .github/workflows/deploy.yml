@@ -54,5 +54,6 @@ jobs:
             cd ${{ secrets.PROJECT_PATH }}
             git pull origin main
             npm install 
+            npx prisma migrate dev --name sync tables
             npm run build 
             pm2 reload morphify

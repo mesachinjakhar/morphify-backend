@@ -48,7 +48,10 @@ export const getImageStatus = async (
     // Cast `req` to `any` to access the custom `user` property.
     // A better practice would be to extend Express's Request type in a declarations file.
     const userId = (req as any).user?.id;
-    const { falAiRequestId } = req.query;
+    const { jobId } = req.query;
+
+    let falAiRequestId = req.query.falAiRequestId as string;
+
     console.log("user id: ", userId);
 
     if (!userId) {
@@ -61,36 +64,45 @@ export const getImageStatus = async (
 
     // --- Start of Fix ---
     // This new check ensures falAiRequestId is present AND is a string
-    if (!falAiRequestId || typeof falAiRequestId !== "string") {
+    if (!jobId || typeof jobId !== "string") {
       res.status(400).json({
         status: "fail",
         message:
-          "A single, valid Fal AI Request ID must be provided as a query parameter.",
+          "A single, valid Job ID must be provided as a query parameter.",
       });
       return;
     }
 
-    if (!falAiRequestId) {
+    if (!jobId) {
       // Return a 400 Bad Request error if the request ID is missing from params.
-      res
-        .status(400)
-        .json({ status: "fail", message: "Fal AI Request ID not provided" });
+      res.status(400).json({ status: "fail", message: "Job ID not provided" });
       return;
     }
 
-    // Fetch all images associated with the user and the specific request ID.
-    const images = await prisma.outputImages.findMany({
-      where: {
-        falAiRequestId: falAiRequestId,
-        userId: userId,
-      },
-    });
+    let images = [];
+
+    // Fetch all images associated with the user and the specific job ID.
+    if (falAiRequestId) {
+      images = await prisma.generatedImages.findMany({
+        where: {
+          providerRequestId: falAiRequestId,
+          userId: userId,
+        },
+      });
+    } else {
+      images = await prisma.generatedImages.findMany({
+        where: {
+          id: jobId,
+          userId: userId,
+        },
+      });
+    }
 
     // If no images are found for that request ID, it's a client error (wrong ID).
     if (images.length === 0) {
       res.status(404).json({
         status: "fail",
-        message: "No images found for this request ID",
+        message: "No images found for this Job ID",
       });
       return;
     }
@@ -111,7 +123,7 @@ export const getImageStatus = async (
     res.status(200).json({
       status: "success",
       data: {
-        falAiRequestId: falAiRequestId,
+        jobId: jobId,
         status: overallStatus,
         numPhotos: totalPhotos,
         completedPhotos: completedImages,
@@ -140,7 +152,7 @@ export const getGeneratedImages = async (
   }
 
   // Fetch all images associated with the user
-  const images = await prisma.outputImages.findMany({
+  const images = await prisma.generatedImages.findMany({
     where: {
       userId: userId,
       status: "GENERATED",
@@ -149,6 +161,6 @@ export const getGeneratedImages = async (
 
   res.status(200).json({
     status: "success",
-    images: images,
+    data: images,
   });
 };

@@ -13,9 +13,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// -----------------------------------------------------------------------------------
+// Ai Providers and their Models 
+
+model AiProvider {
+  id         String      @id @default(uuid())
+  name       String       // e.g. OpenAI, Replicate, Fal AI
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  aiModels   AiModel[]    // One-to-many relationship
+}
+
+model AiModel {
+  id                String      @id @default(uuid())
+  aiProviderId      String
+  name              String        // Model name, e.g. DALL·E, SDXL, etc.
+  baseCostPerCall   Float         // Real USD API cost
+  mstarsCostPerCall Float
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  aiProvider        AiProvider    @relation(fields: [aiProviderId], references: [id], onDelete: Restrict)
+  aiFilters         AiFilter[]    // Many filters can use this model
+  transactions      MstarTransaction[]
+}
+
+// -----------------------------------------------------------------------------------
+// User
+
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
+  mstarsBalance Float           @default(0)
   name          String?
   dateOfBirth   String? 
   gender        String?
@@ -26,13 +56,31 @@ model User {
   otpExpiresAt  DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  transactions      MstarTransaction[]
 }
 
-enum ModelTrainingStatusEnum {
-  PENDING
-  GENERATED
-  FAILED
+// -----------------------------------------------------------------------------------
+// User Transactions
+
+model MstarTransaction {
+  id                String           @id @default(uuid())
+  userId            String
+  aiFilterId        String?          // Nullable
+  aiModelId         String           // Track exact model used
+  mstarsSpent       Float
+  realCost          Float?        // USD cost if needed
+  transactionType   TransactionType
+  status            TransactionStatus @default(COMPLETED)
+  createdAt         DateTime      @default(now())
+
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aiFilter          AiFilter?     @relation(fields: [aiFilterId], references: [id])
+  aiModel           AiModel       @relation(fields: [aiModelId], references: [id])
 }
+
+// -----------------------------------------------------------------------------------
+// User Models
 
 model Model {
   id String @id @default(uuid())
@@ -46,7 +94,6 @@ model Model {
   triggerWord String
   tensorPath String?
   trainingStatus ModelTrainingStatusEnum @default(PENDING)
-  trainingImages TrainingImages[]
   outputImages OutputImages[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -55,12 +102,8 @@ model Model {
   @@index([falAiRequestId])
 }
 
-model TrainingImages {
-  id String @id @default(uuid())
-  imageUrl String
-  modelId String
-  model Model @relation(fields: [modelId], references: [id])
-}
+// -----------------------------------------------------------------------------------
+// User Ai Generated Images
 
 model OutputImages {
   id String @id @default(uuid())
@@ -74,14 +117,66 @@ model OutputImages {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@index([falAiRequestId])
-
 }
 
-enum OutputImageStatusEnum {
-  PENDING
-  GENERATED
-  FAILED
+// -----------------------------------------------------------------------------------
+// Ai Filters 
+
+model AiFilter {
+  id                String           @id @default(uuid())
+  name              String
+  aiModelId         String
+  additionalCost    Int            @default(0) // Extra mstars if premium
+  isFeatureHero Boolean @default(false)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  aiModel           AiModel        @relation(fields: [aiModelId], references: [id], onDelete: Restrict)
+  transactions      MstarTransaction[]
+  showcase  AiFilterShowCase?
 }
+
+
+// Ai Filters Showcase 
+
+model AiFilterShowCase {
+  id String @id @default(uuid())
+  aiFilterId String @unique
+  images      ShowcaseImagePair[]
+  aiFilter AiFilter @relation(fields: [aiFilterId], references: [id])
+}
+
+model ShowcaseImagePair {
+  id        String   @id @default(uuid())
+  beforeImage String // URL or path to the "before" image
+  afterImage  String // URL or path to the "after" image
+  
+  // This is the foreign key that links this image pair back to its showcase container.
+  showcaseId  String
+  showcase    AiFilterShowCase @relation(fields: [showcaseId], references: [id])
+}
+
+// -----------------------------------------------------------------------------------
+// Ai Filters output images
+
+model GeneratedImages {
+  id String @id @default(uuid())
+  aiFilterId String?
+  packId String?
+  userModelId String?
+  prompt String?
+  userId String
+  imageUrl String @default("")
+  providerRequestId String?
+  status OutputImageStatusEnum @default(PENDING)
+  attempt Int @default(1)
+  failReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------------
+// Ai Images Defined Packs with Prompts
 
 model Packs {
   id String @id @default(uuid())
@@ -94,6 +189,9 @@ model Packs {
   updatedAt     DateTime @updatedAt
 }
 
+// -----------------------------------------------------------------------------------
+//  Packs Prompts
+
 model PackPrompts {
   id String @id @default(uuid())
   prompt String
@@ -104,6 +202,11 @@ model PackPrompts {
   updatedAt     DateTime @updatedAt
 }
 
+
+
+// -----------------------------------------------------------------------------------
+// Enums
+
 enum Provider {
   GOOGLE
   FACEBOOK
@@ -111,11 +214,28 @@ enum Provider {
   EMAIL
 }
 
+enum TransactionType {
+  DEDUCTION
+  TOPUP
+  REFUND
+}
+
+enum TransactionStatus {
+  COMPLETED
+  FAILED
+  REFUNDED
+}
 
 enum ModelTypeEnum {
   MAN
   WOMEN
   OTHER
+}
+
+enum ModelTrainingStatusEnum {
+  PENDING
+  GENERATED
+  FAILED
 }
 
 enum EthnicityEnum {
@@ -136,4 +256,11 @@ enum EyeColorEnum {
   GREY
   BROWN 
   HAZEL
+}
+
+enum OutputImageStatusEnum {
+  PENDING
+  UPLOADING
+  GENERATED
+  FAILED
 }

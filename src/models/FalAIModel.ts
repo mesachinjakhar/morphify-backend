@@ -6,6 +6,20 @@ export class FalAIModel extends BaseModel {
     super();
   }
 
+  public async trainModel(zipUrl: string, triggerWord: string) {
+    const { request_id, response_url } = await fal.queue.submit(
+      "fal-ai/flux-lora-fast-training",
+      {
+        input: {
+          images_data_url: zipUrl,
+          trigger_word: triggerWord,
+        },
+        webhookUrl: `https://morphify.botcmd.com/api/ai-photos/fal-ai/webhook/train`,
+      }
+    );
+    return { request_id, response_url };
+  }
+
   public async generateImage(
     prompt: string,
     tensorPath: string,
@@ -28,15 +42,15 @@ export class FalAIModel extends BaseModel {
     return { request_id, response_url };
   }
 
-  public async trainModel(zipUrl: string, triggerWord: string) {
+  public async deblur(imgaeUrl: string) {
     const { request_id, response_url } = await fal.queue.submit(
-      "fal-ai/flux-lora-fast-training",
+      "fal-ai/nafnet/deblur",
       {
         input: {
-          images_data_url: zipUrl,
-          trigger_word: triggerWord,
+          image_url:
+            "https://storage.googleapis.com/falserverless/nafnet/blurry.png",
         },
-        webhookUrl: `https://morphify.botcmd.com/api/ai-photos/fal-ai/webhook/train`,
+        webhookUrl: `https://morphify.botcmd.com/api/ai-filters/fal-ai/webhook/deblur`,
       }
     );
     return { request_id, response_url };
