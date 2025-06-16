@@ -189,6 +189,7 @@ router.post("/pack/generate", authMiddleware, async (req, res, next) => {
     transactionId = transaction.id;
   } catch (error) {
     next(error);
+    return;
   }
 
   // Step 4. Check total image to be generated.
