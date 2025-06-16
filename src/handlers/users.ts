@@ -22,13 +22,11 @@ export const getUser = async (
     res.status(401).json({ status: "fail", message: "No user found" });
     return;
   }
-  res
-    .status(200)
-    .json({
-      status: "success",
-      message: "User fetched successfully",
-      data: fetchedUser,
-    });
+  res.status(200).json({
+    status: "success",
+    message: "User fetched successfully",
+    data: fetchedUser,
+  });
   return;
 };
 
@@ -178,18 +176,54 @@ export const getGeneratedImages = async (
     return;
   }
 
-  // Fetch all images associated with the user
-  const images = await prisma.generatedImages.findMany({
-    where: {
-      userId: userId,
-      status: "GENERATED",
-    },
-  });
+  // --- Pagination Logic ---
+  // Get page and limit from query parameters, with sensible defaults.
+  // We use parseInt to convert string queries to numbers.
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 20; // Default to 20 images per page
+  const skip = (page - 1) * limit; // Calculate the number of records to skip
 
-  res.status(200).json({
-    status: "success",
-    data: images,
-  });
+  try {
+    // We use a Prisma transaction to efficiently run both queries at the same time.
+    const [images, totalImages] = await prisma.$transaction([
+      // First query: Fetch the paginated list of images.
+      prisma.generatedImages.findMany({
+        where: {
+          userId: userId,
+          status: "GENERATED",
+        },
+        // It's crucial to order the results consistently for pagination to work correctly.
+        orderBy: {
+          createdAt: "desc",
+        },
+        // 'skip' is the offset, and 'take' is the limit.
+        skip: skip,
+        take: limit,
+      }),
+      // Second query: Fetch the total count of images that match the criteria.
+      prisma.generatedImages.count({
+        where: {
+          userId: userId,
+          status: "GENERATED",
+        },
+      }),
+    ]);
+
+    // Return the fetched images along with pagination metadata.
+    res.status(200).json({
+      status: "success",
+      data: {
+        images,
+        totalImages,
+        currentPage: page,
+        totalPages: Math.ceil(totalImages / limit),
+      },
+    });
+  } catch (error) {
+    // In case of a database error, pass it to your error-handling middleware.
+    console.error("Failed to fetch generated images:", error);
+    next(error);
+  }
 };
 
 export const getMstarBalance = async (
