@@ -16,7 +16,7 @@ import authMiddleware from "../middlewares/authMiddleware";
 import createUniqueTriggerWord from "../utils/createUniqueTriggerWord";
 import selectRandomPrompt from "../utils/selectRandomPrompt";
 import downloadAndUploadImage from "../utils/downloadAndUploadImage";
-import MstarManager from "@/services/mstar/mstarManager";
+import MstarManager from "../services/mstar/mstarManager";
 import CustomError from "@/utils/CustomError";
 
 const falAiClient = new FalAIModel();
