@@ -6,6 +6,7 @@ import {
   getImageStatus,
   getGeneratedImages,
   getMstarBalance,
+  updateProfile,
 } from "../handlers/users";
 import { Router } from "express";
 
@@ -18,5 +19,7 @@ router.get("/models", authMiddleware, getUserModels);
 router.get("/generated-images/", authMiddleware, getGeneratedImages);
 router.get("/generated-images/status", authMiddleware, getImageStatus);
 router.get("/mstars/balance", authMiddleware, getMstarBalance);
+router.patch("/profile", authMiddleware, updateProfile);
+router.get("/profile", authMiddleware, getUser);
 
 export default router;

@@ -2,9 +2,34 @@ import MstarManager from "../services/mstar/mstarManager";
 import { prisma } from "../lib/prisma";
 import { NextFunction, Request, Response } from "express";
 import CustomError from "../utils/CustomError";
+import { z } from "zod";
 
-export const getUser = (req: Request, res: Response, next: NextFunction) => {
-  res.send("Hello");
+export const getUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const user = req.user as { id: string };
+  if (!user) {
+    res.status(401).json({ status: "fail", message: "No user found" });
+    return;
+  }
+
+  const userId = user.id;
+
+  const fetchedUser = await prisma.user.findUnique({ where: { id: userId } });
+  if (!fetchedUser) {
+    res.status(401).json({ status: "fail", message: "No user found" });
+    return;
+  }
+  res
+    .status(200)
+    .json({
+      status: "success",
+      message: "User fetched successfully",
+      data: fetchedUser,
+    });
+  return;
 };
 
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
@@ -189,6 +214,85 @@ export const getMstarBalance = async (
       data: { balance: balance },
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+const profileUpdateSchema = z.object({
+  name: z
+    .string()
+    .min(1, { message: "Name must be a non-empty string" })
+    .optional(),
+  gender: z
+    .enum(["male", "female", "other"], {
+      errorMap: () => ({ message: "Invalid gender value" }),
+    })
+    .optional(),
+  dateOfBirth: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, {
+      message: "Date of birth must be a valid date (YYYY-MM-DD)",
+    })
+    .optional(),
+});
+
+export const updateProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const validationResult = profileUpdateSchema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    res
+      .status(400)
+      .json({ errors: validationResult.error.flatten().fieldErrors });
+    return;
+  }
+
+  if (!req.user) {
+    res.status(401).json({ message: "Authentication required." });
+    return;
+  }
+
+  const updateData = validationResult.data;
+  const userId = (req.user as { id: string }).id;
+
+  try {
+    if (updateData.dateOfBirth) {
+      const currentUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { dateOfBirth: true },
+      });
+
+      if (!currentUser) {
+        res.status(404).json({ message: "User not found." });
+        return;
+      }
+
+      if (currentUser.dateOfBirth) {
+        // Only block if they're trying to _change_ an existing DOB
+        res.status(400).json({
+          message: "Date of birth has already been set and cannot be changed.",
+        });
+        return;
+      }
+      // No `return` here: let it fall through so the update will include dateOfBirth
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    console.log(`Profile updated for user ID: ${userId}`, updateData);
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      updatedFields: updateData,
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
     next(error);
   }
 };
