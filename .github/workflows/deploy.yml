@@ -54,7 +54,7 @@ jobs:
             cd ${{ secrets.PROJECT_PATH }}
             git pull origin main
             npm install 
-            npm run build 
             npx prisma migrate deploy
             npx prisma db seed
+            npm run build 
             pm2 reload ecosystem.config.js --update-env
