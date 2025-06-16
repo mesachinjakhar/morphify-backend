@@ -131,18 +131,21 @@ router.post("/pack/generate", authMiddleware, async (req, res, next) => {
 
   const user = req.user as { id: string };
 
-  if (!user) {
-    res.status(411).json({
+  if (!parsedBody.success) {
+    // Send a detailed error message from Zod for better debugging
+    res.status(400).json({
       status: "fail",
-      message: "User not found",
+      message: "Invalid input.",
+      errors: parsedBody.error.flatten().fieldErrors,
     });
     return;
   }
 
-  if (!parsedBody.success) {
-    res.status(411).json({
+  // Step 2: Validate user authentication
+  if (!user || !user.id) {
+    res.status(401).json({
       status: "fail",
-      message: "Input is incorrect",
+      message: "Authentication failed. User not found.",
     });
     return;
   }
@@ -178,9 +181,10 @@ router.post("/pack/generate", authMiddleware, async (req, res, next) => {
   const aiModelId = aiModel.aiModelId;
 
   let transactionId: string;
+  let mstarManager;
 
   try {
-    const mstarManager = new MstarManager(prisma);
+    mstarManager = new MstarManager(prisma);
     const transaction = await mstarManager.reserveMstars(
       user.id,
       aiModelId,
@@ -225,11 +229,20 @@ router.post("/pack/generate", authMiddleware, async (req, res, next) => {
   const fullPrompt = `photo of ${model.triggerWord}, a ${model.age}-year-old ${model.ethnicity}, ${selectedPrompt.prompt}`;
 
   // Step 8. Send request to fal.ai for image generation
-  const generationRequest = await falAiClient.generateImage(
-    fullPrompt,
-    model.tensorPath,
-    imagesToBeGenerated
-  );
+  let generationRequest;
+  try {
+    generationRequest = await falAiClient.generateImage(
+      fullPrompt,
+      model.tensorPath,
+      imagesToBeGenerated
+    );
+  } catch (error) {
+    await mstarManager.cancelTransaction(transactionId);
+    res.status(500).json({
+      message: "Faild to send image generation request. Refunding Mstar.",
+    });
+    return;
+  }
 
   // Step 9. Insert response to Database
   // Prepare an array of all the image data objects to be created.
