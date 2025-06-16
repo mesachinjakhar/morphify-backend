@@ -8,6 +8,7 @@ import { NextFunction, Request, Response } from "express";
 import { PhotoService } from "../services/photo.service";
 import CustomError from "../utils/CustomError";
 import { prisma } from "../lib/prisma";
+import MstarManager from "../services/mstar/mstarManager";
 
 type AiFilterWithRelations = {
   id: string;
@@ -151,6 +152,53 @@ export class PhotoHandler {
       // Pass any errors to the next middleware for centralized error handling.
       console.error("Failed to get AI filters:", error);
       next(error);
+    }
+  };
+
+  public getCost = async (req: Request, res: Response, next: NextFunction) => {
+    const { aiFilterId, packId, numOfPhotos } = req.body;
+
+    if (!aiFilterId && !packId) {
+      throw new CustomError("Either provide Ai Filter Id or Pack id", 400);
+    }
+
+    let num = numOfPhotos;
+    if (!num) {
+      num = 1;
+    }
+
+    if (aiFilterId) {
+      const aiFilter = await prisma.aiFilter.findUnique({
+        where: { id: aiFilterId },
+      });
+      if (!aiFilter) {
+        throw new CustomError("Ai Filter not found", 404);
+      }
+      const modelId = aiFilter.aiModelId;
+      const mstarManagar = new MstarManager(prisma);
+      const cost = await mstarManagar.calculateCost(modelId, num, aiFilterId);
+      res.status(200).json({
+        status: "success",
+        message: "cost calculated successfully",
+        data: { cost: cost },
+      });
+      return;
+    }
+
+    if (packId) {
+      const pack = await prisma.packs.findUnique({ where: { id: packId } });
+      if (!pack) {
+        throw new CustomError("Pack not found", 404);
+      }
+      const modelId = pack.aiModelId;
+      const mstarManagar = new MstarManager(prisma);
+      const cost = await mstarManagar.calculateCost(modelId, num);
+      res.status(200).json({
+        status: "success",
+        message: "cost calculated successfully",
+        data: { cost: cost },
+      });
+      return;
     }
   };
 

@@ -150,6 +150,14 @@ router.post("/pack/generate", authMiddleware, async (req, res, next) => {
     return;
   }
 
+  if (parsedBody.data.num > 4) {
+    res.status(404).json({
+      status: "fail",
+      message: "Maximum photos can be 4 in one request",
+    });
+    return;
+  }
+
   // Step 2. Fetch Model details from the Database
   const model = await prisma.model.findUnique({
     where: {

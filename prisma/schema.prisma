@@ -48,6 +48,7 @@ model User {
   email         String   @unique
   mstarsBalance Float           @default(0)
   heldBalance Float @default(0)
+  showAds Boolean @default(true)
   name          String?
   dateOfBirth   String? 
   gender        String?
