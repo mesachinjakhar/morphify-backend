@@ -125,7 +125,7 @@ router.post("/training", authMiddleware, async (req, res) => {
 //   });
 // });
 
-router.post("/pack/generate", async (req, res, next) => {
+router.post("/pack/generate", authMiddleware, async (req, res, next) => {
   // Step 1. Check if body is valid or not
   const parsedBody = GenerateImagesFromPack.safeParse(req.body);
 
@@ -134,7 +134,7 @@ router.post("/pack/generate", async (req, res, next) => {
   if (!user) {
     res.status(411).json({
       status: "fail",
-      message: "User not incorrect",
+      message: "User not found",
     });
     return;
   }
