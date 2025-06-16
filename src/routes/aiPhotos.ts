@@ -16,6 +16,8 @@ import authMiddleware from "../middlewares/authMiddleware";
 import createUniqueTriggerWord from "../utils/createUniqueTriggerWord";
 import selectRandomPrompt from "../utils/selectRandomPrompt";
 import downloadAndUploadImage from "../utils/downloadAndUploadImage";
+import MstarManager from "@/services/mstar/mstarManager";
+import CustomError from "@/utils/CustomError";
 
 const falAiClient = new FalAIModel();
 
@@ -123,9 +125,19 @@ router.post("/training", authMiddleware, async (req, res) => {
 //   });
 // });
 
-router.post("/pack/generate", async (req, res) => {
+router.post("/pack/generate", async (req, res, next) => {
   // Step 1. Check if body is valid or not
   const parsedBody = GenerateImagesFromPack.safeParse(req.body);
+
+  const user = req.user as { id: string };
+
+  if (!user) {
+    res.status(411).json({
+      status: "fail",
+      message: "User not incorrect",
+    });
+    return;
+  }
 
   if (!parsedBody.success) {
     res.status(411).json({
@@ -149,6 +161,34 @@ router.post("/pack/generate", async (req, res) => {
       message: "Model not found or is not fully trained.",
     });
     return;
+  }
+
+  const aiModel = await prisma.packs.findUnique({
+    where: { id: parsedBody.data.packId },
+  });
+
+  if (!aiModel) {
+    res.status(404).json({
+      // Use 404 for Not Found
+      message: "Pack not found",
+    });
+    return;
+  }
+
+  const aiModelId = aiModel.aiModelId;
+
+  let transactionId: string;
+
+  try {
+    const mstarManager = new MstarManager(prisma);
+    const transaction = await mstarManager.reserveMstars(
+      user.id,
+      aiModelId,
+      req.body.num
+    );
+    transactionId = transaction.id;
+  } catch (error) {
+    next(error);
   }
 
   // Step 4. Check total image to be generated.
@@ -198,6 +238,7 @@ router.post("/pack/generate", async (req, res) => {
     userModelId: parsedBody.data.modelId,
     imageUrl: "", // To be updated later via webhook or polling
     providerRequestId: generationRequest.request_id,
+    transactionId: transactionId,
   }));
 
   // Use `createMany` for a single, efficient bulk database insert.
@@ -294,8 +335,7 @@ router.post("/fal-ai/webhook/train", async (req, res) => {
   });
 });
 
-router.post("/fal-ai/webhook/image", async (req, res) => {
-  console.log("webhook called with body:", req.body);
+router.post("/fal-ai/webhook/image", async (req, res, next) => {
   const requestId = req.body.request_id;
   const images = req.body.payload.images;
 
@@ -343,6 +383,39 @@ router.post("/fal-ai/webhook/image", async (req, res) => {
       },
     });
   });
+
+  // Fetch transaction id and commit it.
+  const transaction = await prisma.generatedImages.findFirst({
+    where: {
+      providerRequestId: requestId,
+    },
+  });
+
+  if (!transaction) {
+    console.error(
+      `Transaction id not found in DB record for request ID: ${requestId}`
+    );
+    res.status(409).json({ message: "Transaction not found" }); // 409 Conflict
+    return;
+  }
+
+  const transactionId = transaction.transactionId;
+
+  if (!transactionId) {
+    console.error(
+      `Transaction id not found in DB record for request ID: ${requestId}`
+    );
+    res.status(409).json({ message: "Transaction not found" }); // 409 Conflict
+    return;
+  }
+
+  const mstarManager = new MstarManager(prisma);
+
+  try {
+    mstarManager.commitTransaction(transactionId);
+  } catch (error) {
+    next(error);
+  }
 
   // Step 4. Execute all updates together in a single, atomic transaction
   try {

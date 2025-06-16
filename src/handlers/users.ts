@@ -1,5 +1,7 @@
+import MstarManager from "../services/mstar/mstarManager";
 import { prisma } from "../lib/prisma";
 import { NextFunction, Request, Response } from "express";
+import CustomError from "../utils/CustomError";
 
 export const getUser = (req: Request, res: Response, next: NextFunction) => {
   res.send("Hello");
@@ -163,4 +165,30 @@ export const getGeneratedImages = async (
     status: "success",
     data: images,
   });
+};
+
+export const getMstarBalance = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user as { id: string };
+    if (!user) {
+      throw new CustomError("Auth Failed. No user found", 400);
+    }
+
+    const userId = user.id;
+
+    const mstarManager = new MstarManager(prisma);
+
+    const balance = await mstarManager.getTotalBalance(userId);
+    res.status(200).json({
+      status: "success",
+      message: "User balance fetched successfully",
+      data: { balance: balance },
+    });
+  } catch (error) {
+    next(error);
+  }
 };

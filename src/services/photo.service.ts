@@ -11,6 +11,8 @@ import {
   insertForAiFilters,
   insertForPack,
 } from "./db/generatedImages.service";
+import MstarManager from "./mstar/mstarManager";
+import { prisma } from "../lib/prisma";
 
 export class PhotoService {
   private jobService = new JobService();
@@ -56,14 +58,40 @@ export class PhotoService {
       );
     }
 
+    const mstarManager = new MstarManager(prisma);
+
     let image;
+    let transactionId;
 
     // Use an if/else if block to handle the creation logic.
     // This ensures 'image' is assigned a value if either ID is present.
     if (aiFilterId) {
       image = await insertForAiFilters(aiFilterId, userId);
+      let aiFilter = await prisma.aiFilter.findUnique({
+        where: { id: aiFilterId },
+      });
+      if (!aiFilter) {
+        throw new CustomError("Ai Filter not found", 404);
+      }
+      const transaction = await mstarManager.reserveMstars(
+        userId,
+        aiFilter.aiModelId,
+        1,
+        aiFilterId
+      );
+      transactionId = transaction.id;
     } else if (packId) {
       image = await insertForPack(packId, userId);
+      let pack = await prisma.packs.findUnique({ where: { id: packId } });
+      if (!pack) {
+        throw new CustomError("Pack not found", 404);
+      }
+      const transaction = await mstarManager.reserveMstars(
+        userId,
+        pack.aiModelId,
+        1
+      );
+      transactionId = transaction.id;
     } else {
       // This path is now unreachable due to the check at the start of the function,
       // but it helps satisfy the TypeScript compiler.
@@ -76,7 +104,13 @@ export class PhotoService {
     const imageId = image.id;
 
     // 3. Validation passed. Create the job data.
-    const jobData: IPhotoJobData = { imageId, providerName, modelName, input };
+    const jobData: IPhotoJobData = {
+      imageId,
+      providerName,
+      modelName,
+      input,
+      transactionId,
+    };
 
     // 4. Add the job to the queue.
     const job = await this.jobService.addJob(jobData);

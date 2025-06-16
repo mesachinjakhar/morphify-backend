@@ -14,6 +14,9 @@ import { getProvider } from "./services/providers/provider.strategy";
 import { IPhotoJobData } from "./services/job.service";
 import { GenerateImageOutput } from "./services/providers/provider.interface";
 import { prisma } from "./lib/prisma";
+import MstarManager from "./services/mstar/mstarManager";
+
+const mstarManager = new MstarManager(prisma);
 
 // Centralized connection details
 const redisConnection = {
@@ -78,56 +81,88 @@ const worker = new Worker<IPhotoJobData, GenerateImageOutput>(
 
 // --- REFACTORED Event Listeners ---
 worker.on("completed", async (job, result) => {
-  const { imageId } = job.data;
+  const { imageId, transactionId } = job.data; // Retrieve transactionId from job data
+
+  if (!transactionId) {
+    console.error(
+      `CRITICAL ERROR: Job ${job.id} (imageId: ${imageId}) completed without a transactionId. Cannot process.`
+    );
+    // Mark as failed because we cannot resolve the transaction state
+    await prisma.generatedImages.update({
+      where: { id: imageId },
+      data: {
+        status: "FAILED",
+        failReason: "Internal Error: Missing transaction ID.",
+      },
+    });
+    return;
+  }
+
   console.log(
-    `Job ${job.id} completed. Result type: ${result.type}. Handing off to image-processing worker.`
+    `Job ${job.id} completed. Result type: ${result.type}. Committing transaction ${transactionId}.`
   );
 
   try {
-    // --- JOB HANDOFF LOGIC ---
+    // --- STAGE 1: Commit the M-Star Transaction ---
+    // This is the point of no return. The user is now charged for the generation.
+    await mstarManager.commitTransaction(transactionId);
+    console.log(`Transaction ${transactionId} committed successfully.`);
+
+    // --- STAGE 2: Hand-off to Image Processing Queue ---
+    // This part is largely the same, but if it fails, the user has already been correctly charged.
     if (result.type === "b64_json") {
-      // For b64 data, we must wait for the upload. Mark status as UPLOADING.
       await prisma.generatedImages.update({
         where: { id: imageId },
-        data: { status: "UPLOADING", providerRequestId: result.requestId }, // A new intermediate status
+        data: { status: "UPLOADING", providerRequestId: result.requestId },
       });
-      // Create a job to process the Base64 data
       await imageProcessingQueue.add("process-b64", {
         imageId: imageId,
         b64_json: result.data,
       });
     } else if (result.type === "url") {
-      // For a URL, we can show the result immediately and process in the background.
-      // Step 1: Update DB with the temporary URL and mark as GENERATED.
       await prisma.generatedImages.update({
         where: { id: imageId },
         data: {
           status: "GENERATED",
           providerRequestId: result.requestId,
-          imageUrl: result.data, // This is the temporary URL from the provider
+          imageUrl: result.data,
         },
       });
-      console.log(
-        `Temporarily updated DB for imageId ${imageId} with provider URL.`
-      );
-
-      // Step 2: Queue a background job to download the image and move it to our S3.
       await imageProcessingQueue.add("process-url", {
         imageId: imageId,
         url: result.data,
       });
     }
   } catch (error) {
+    // This catch block now handles failures in either committing the transaction
+    // or handing off to the next queue.
     console.error(
-      `Failed to hand off job ${job.id} (imageId: ${imageId}) to the image-processing queue:`,
+      `Failed during post-processing for job ${job.id} (imageId: ${imageId}):`,
       error
     );
-    // If the handoff fails, we must mark the original job as failed in the DB.
+
+    // Type guard to safely access the error message.
+    let failReason = "Failed to queue for image processing.";
+    if (error instanceof Error) {
+      if (
+        error.message === "Transaction not found or not in PROCESSING state."
+      ) {
+        failReason = "Failed to commit transaction.";
+      } else {
+        // Use the actual error message if it's a different error
+        failReason = error.message;
+      }
+    } else {
+      failReason = "An unknown error occurred during post-processing.";
+    }
+
+    // We update the DB to reflect the failure. The transaction might have been committed
+    // but the subsequent step failed, which is a valid failure state.
     await prisma.generatedImages.update({
       where: { id: imageId },
       data: {
         status: "FAILED",
-        failReason: "Failed to queue for image processing.",
+        failReason: failReason,
       },
     });
   }
@@ -135,30 +170,120 @@ worker.on("completed", async (job, result) => {
 
 // The 'failed' handler for this worker can remain largely the same.
 // It should update the DB to FAILED immediately.
-worker.on("failed", async (job, err) => {
-  if (job) {
+worker.on("failed", async (job, error) => {
+  // Define the maximum number of attempts before considering the job permanently failed.
+  const MAX_ATTEMPTS = 3;
+
+  // --- STAGE 1: Basic Job and Error Validation ---
+  if (!job) {
     console.error(
-      `Job for imageId ${job.data.imageId} has failed with error: ${err.message}`
+      "A job failed, but the job object was undefined. This might be due to a Redis connection issue."
     );
-    try {
+    throw new Error("Job object is undefined in the 'failed' event handler.");
+  }
+
+  const { imageId, transactionId } = job.data;
+  const errorMessage =
+    error instanceof Error ? error.message : "An unknown error occurred.";
+
+  console.log(
+    `Job ${job.id} (imageId: ${imageId}) reported a failure with error: ${errorMessage}`
+  );
+
+  try {
+    // --- STAGE 2: Increment Attempt Count and Check Status in DB ---
+
+    // Atomically increment the attempt counter and store the latest fail reason.
+    // The `update` call returns the updated record, so we can check the new attempt count.
+    const updatedImage = await prisma.generatedImages.update({
+      where: { id: imageId },
+      data: {
+        attempt: { increment: 1 },
+        // Storing the latest error message is useful for debugging each attempt.
+        failReason: errorMessage,
+      },
+    });
+
+    const newAttemptCount = updatedImage.attempt;
+    console.log(
+      `Image ${imageId} is now on attempt ${newAttemptCount}/${MAX_ATTEMPTS}.`
+    );
+
+    // --- STAGE 3: Decide Whether to Refund or Retry ---
+
+    // If we have not yet reached the max number of attempts, do not refund.
+    // BullMQ will handle the retry based on its configuration.
+    if (newAttemptCount < MAX_ATTEMPTS) {
+      console.log(
+        `Job ${job.id} will be retried. Not cancelling transaction at this time.`
+      );
+      return; // Exit and wait for the next attempt.
+    }
+
+    // --- STAGE 4: Handle Permanent Failure (Max Attempts Reached) ---
+
+    console.error(
+      `Job ${job.id} has failed on its final attempt (${newAttemptCount}/${MAX_ATTEMPTS}). Proceeding to cancel transaction and mark as failed.`
+    );
+
+    if (transactionId) {
+      try {
+        // Attempt to cancel the transaction (issue a refund).
+        await mstarManager.cancelTransaction(transactionId);
+        console.log(
+          `Transaction ${transactionId} for job ${job.id} cancelled successfully.`
+        );
+
+        // After a successful refund, finalize the image status as FAILED in the database.
+        await prisma.generatedImages.update({
+          where: { id: imageId },
+          data: {
+            status: "FAILED",
+            failReason: `Job failed after ${newAttemptCount} attempts. User was refunded. Final error: ${errorMessage}`,
+          },
+        });
+      } catch (cancelError) {
+        // CRITICAL STATE: The job failed, AND we failed to refund the user.
+        const refundErrorMessage =
+          cancelError instanceof Error
+            ? cancelError.message
+            : "Unknown refund process error.";
+        console.error(
+          `CRITICAL ERROR: Job ${job.id} failed, and refunding transaction ${transactionId} also FAILED. Manual intervention required. Refund error: ${refundErrorMessage}`
+        );
+
+        await prisma.generatedImages.update({
+          where: { id: imageId },
+          data: {
+            status: "FAILED",
+            failReason: `CRITICAL: The job failed, and the automated refund also failed. Please contact support. Final job error: ${errorMessage}`,
+          },
+        });
+      }
+    } else {
+      // CRITICAL STATE: The job failed permanently, but no transactionId is available.
+      console.error(
+        `CRITICAL ERROR: Failed job ${job.id} is missing a transactionId. Cannot issue a refund.`
+      );
+
       await prisma.generatedImages.update({
-        where: { id: job.data.imageId },
+        where: { id: imageId },
         data: {
           status: "FAILED",
-          failReason: err.message,
-          attempt: { increment: 1 },
+          failReason: `Job failed after ${newAttemptCount} attempts, but no transactionId was found, so no refund was issued. Final error: ${errorMessage}`,
         },
       });
-    } catch (dbError) {
-      console.error(
-        `Failed to update database for FAILED job (imageId: ${job.data.imageId}):`,
-        dbError
-      );
     }
-  } else {
+  } catch (dbError) {
+    // Handle cases where the database update itself fails.
+    const dbErrorMessage =
+      dbError instanceof Error ? dbError.message : "Unknown DB error.";
     console.error(
-      `A job failed, but the job object was undefined. Error: ${err.message}`
+      `FATAL ERROR: Could not update the attempt count in the database for job ${job.id} (imageId: ${imageId}). Error: ${dbErrorMessage}`
     );
+    // Depending on your requirements, you might want to throw this error to crash the worker
+    // and signal a major problem with your database connection or schema.
+    throw dbError;
   }
 });
 

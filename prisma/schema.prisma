@@ -37,6 +37,7 @@ model AiModel {
   aiProvider        AiProvider    @relation(fields: [aiProviderId], references: [id], onDelete: Restrict)
   aiFilters         AiFilter[]    // Many filters can use this model
   transactions      MstarTransaction[]
+  packs Packs[]
 }
 
 // -----------------------------------------------------------------------------------
@@ -46,6 +47,7 @@ model User {
   id            String   @id @default(uuid())
   email         String   @unique
   mstarsBalance Float           @default(0)
+  heldBalance Float @default(0)
   name          String?
   dateOfBirth   String? 
   gender        String?
@@ -171,6 +173,7 @@ model GeneratedImages {
   status OutputImageStatusEnum @default(PENDING)
   attempt Int @default(1)
   failReason String?
+  transactionId String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -181,12 +184,14 @@ model GeneratedImages {
 model Packs {
   id String @id @default(uuid())
   name String
+  aiModelId String @default("849a89f6-00d1-45e5-bd16-ee3a8f32597a")
   prompts PackPrompts[]
   tumbnail String
   gallary String[]
   description String
   createdAt DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  packs AiModel @relation(fields: [aiModelId], references: [id])
 }
 
 // -----------------------------------------------------------------------------------
@@ -215,15 +220,15 @@ enum Provider {
 }
 
 enum TransactionType {
-  DEDUCTION
-  TOPUP
+  DEBIT
+  CREDIT
   REFUND
 }
 
 enum TransactionStatus {
+  PROCESSING
   COMPLETED
   FAILED
-  REFUNDED
 }
 
 enum ModelTypeEnum {

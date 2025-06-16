@@ -5,8 +5,9 @@ const s3 = new S3Client({
     accessKeyId: process.env.S3_ACCESS_KEY as string,
     secretAccessKey: process.env.S3_SECRET_KEY as string,
   },
-  endpoint: process.env.ENDPOINT, // or a custom domain if you've set that up
-  region: "auto", // R2 doesn't use traditional AWS regions
+  endpoint: process.env.ENDPOINT,
+  region: "auto",
+  forcePathStyle: true,
 });
 
 export default s3;

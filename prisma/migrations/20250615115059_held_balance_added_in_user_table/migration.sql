@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "heldBalance" DOUBLE PRECISION NOT NULL DEFAULT 0;

@@ -17,6 +17,7 @@ export interface IPhotoJobData {
   providerName: string;
   modelName: string;
   input: GenerateImageInput;
+  transactionId: string;
 }
 
 // --- Connection Setup ---
@@ -46,7 +47,7 @@ export class JobService {
   ): Promise<Job<IPhotoJobData, GenerateImageOutput>> {
     // The first argument is a name for this type of job within the queue.
     const job = await photoQueue.add("generate-image", data, {
-      attempts: 3, // Retry up to 3 times if the job fails
+      attempts: 2, // Retry up to 3 times if the job fails
       backoff: {
         // CORRECTED: Was "backff"
         type: "exponential",
