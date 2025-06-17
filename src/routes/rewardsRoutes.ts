@@ -4,7 +4,7 @@ const router = Router();
 
 router.get("/verify", (req: Request, res: Response) => {
   console.log("recieved paramets: ", req.params);
-  res.status(200);
+  res.status(200).json({ message: "Verification received" }); // send a proper response
   return;
 });
 
