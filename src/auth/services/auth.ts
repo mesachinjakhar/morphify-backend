@@ -65,7 +65,10 @@ export async function handleSocialLogin(profile: any) {
 
 export async function sendEmailOtp(email: string) {
   // Dont send otp if google is testing
-  if (email === "googletesting@morphify.botcmd.com") {
+  if (
+    email === "googletesting@morphify.botcmd.com" ||
+    email === "googletest@morphify.botcmd.com"
+  ) {
     let user = await prisma.user.findUnique({ where: { email } });
     // Generate OTP and expiry
     const { otp, otpExpiresAt } = generateOtp();
