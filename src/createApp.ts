@@ -26,6 +26,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/ai-photos", aiPhotosRouter);
 
 app.use("/api/v1/photos", photosRouter);
+app.use("/api/v1/rewards");
 
 // Global Error Handler
 app.use(errorHandler);
