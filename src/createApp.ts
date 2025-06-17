@@ -5,6 +5,7 @@ import authRouter from "./auth/routes/auth";
 import aiPhotosRouter from "./routes/aiPhotos";
 import errorHandler from "./handlers/errorHandler";
 import photosRouter from "./routes/photosRoutes";
+import rewardsRouter from "./routes/rewardsRoutes";
 import passport from "passport";
 import "./auth/strategies/google";
 
@@ -26,7 +27,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/ai-photos", aiPhotosRouter);
 
 app.use("/api/v1/photos", photosRouter);
-app.use("/api/v1/rewards");
+app.use("/api/v1/rewards", rewardsRouter);
 
 // Global Error Handler
 app.use(errorHandler);
