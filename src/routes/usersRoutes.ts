@@ -7,8 +7,10 @@ import {
   getGeneratedImages,
   getMstarBalance,
   updateProfile,
+  deleteAccount,
 } from "../handlers/users";
 import { Router } from "express";
+import passport from "passport";
 
 const router = Router();
 
@@ -21,5 +23,10 @@ router.get("/generated-images/status", authMiddleware, getImageStatus);
 router.get("/mstars/balance", authMiddleware, getMstarBalance);
 router.patch("/profile", authMiddleware, updateProfile);
 router.get("/profile", authMiddleware, getUser);
+router.delete(
+  "/delete",
+  passport.authenticate("google-id-token", { session: false }),
+  deleteAccount
+);
 
 export default router;

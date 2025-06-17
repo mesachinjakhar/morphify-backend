@@ -64,6 +64,28 @@ export async function handleSocialLogin(profile: any) {
 }
 
 export async function sendEmailOtp(email: string) {
+  // Dont send otp if google is testing
+  if (email === "googletesting@morphify.botcmd.com") {
+    let user = await prisma.user.findUnique({ where: { email } });
+    // Generate OTP and expiry
+    const { otp, otpExpiresAt } = generateOtp();
+
+    // Update user with OTP and expiry
+    await prisma.user.update({
+      where: { email },
+      data: {
+        otp: "010722",
+        otpExpiresAt,
+      },
+    });
+
+    return {
+      status: "success",
+      type: "login",
+      message: "OTP sent successfully",
+    };
+  }
+
   const isEmail = validateEmail(email);
   if (!isEmail) {
     return {

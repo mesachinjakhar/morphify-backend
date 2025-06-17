@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { NextFunction, Request, Response } from "express";
 import CustomError from "../utils/CustomError";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 export const getUser = async (
   req: Request,
@@ -328,5 +329,92 @@ export const updateProfile = async (
   } catch (error) {
     console.error("Error updating profile:", error);
     next(error);
+  }
+};
+
+declare global {
+  namespace Express {
+    interface User {
+      provider: string;
+      id: string; // This is the Google User ID (the 'sub' claim)
+      email: string;
+      name: string;
+      picture: string;
+      // Add any other properties from the Google profile you might need
+      [key: string]: any;
+    }
+  }
+}
+
+/**
+ * @route   DELETE /api/user/delete
+ * @desc    Deletes a user account after verifying their Google ID token.
+ * @access  Private (Requires Bearer Token)
+ */
+export const deleteAccount = async (req: Request, res: Response) => {
+  // At this point, the passport middleware has already run and verified the token.
+  // The authenticated user's profile is attached to `req.user`.
+  if (!req.user) {
+    // This case should ideally not be hit if the middleware is set up correctly,
+    // but it's good practice for type safety and edge cases.
+    res
+      .status(401)
+      .json({ message: "Authentication failed: No user profile found." });
+    return;
+  }
+
+  const googleUserId = req.user.id;
+  const userEmail = req.user.email;
+
+  console.log(
+    `Attempting to delete account for user ID: ${googleUserId} (${userEmail})`
+  );
+
+  try {
+    // Find the user in your database using their unique Google ID and delete them.
+    // It's crucial to use the immutable Google ID ('sub') rather than the email,
+    // as emails can sometimes change.
+    //
+    // ASSUMPTION: Your Prisma User model has a field (e.g., `googleId`)
+    // that is unique and stores the user's Google 'sub' ID.
+    //
+    // Example Prisma Schema:
+    // model User {
+    //   id        String   @id @default(cuid())
+    //   email     String   @unique
+    //   name      String?
+    //   googleId  String?  @unique  // <-- The field to match against
+    //   createdAt DateTime @default(now())
+    // }
+
+    const deletedUser = await prisma.user.delete({
+      where: {
+        email: userEmail,
+        providerId: googleUserId,
+      },
+    });
+
+    console.log(`Successfully deleted user: ${deletedUser.email}`);
+
+    // Send a success response. 200 with a message or 204 No Content are both fine.
+    res.status(200).json({ message: "Account deleted successfully." });
+    return;
+  } catch (error) {
+    console.error("Error during account deletion:", error);
+
+    // Check if the error is from Prisma and is for a record not being found.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      // This error code means 'An operation failed because it depends on one or more records that were required but not found.'
+      // In a `delete` operation, it means the user to be deleted didn't exist.
+      res.status(404).json({ message: "User not found in our database." });
+      return;
+    }
+
+    // For all other errors (e.g., database connection issue), send a generic server error.
+    res.status(500).json({ message: "An internal server error occurred." });
+    return;
   }
 };
