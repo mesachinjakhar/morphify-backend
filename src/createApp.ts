@@ -8,6 +8,8 @@ import photosRouter from "./routes/photosRoutes";
 import rewardsRouter from "./routes/rewardsRoutes";
 import passport from "passport";
 import "./auth/strategies/google";
+import "./instrument.js";
+import * as Sentry from "@sentry/node";
 
 dotenv.config();
 
@@ -18,7 +20,7 @@ app.use(express.json());
 app.use(passport.initialize());
 
 // Routes
-app.get("/ping", (req, res) => {
+app.get("/api/v1/ping", (req, res) => {
   console.log("request received");
   res.send("pong");
 });
@@ -28,6 +30,9 @@ app.use("/api/ai-photos", aiPhotosRouter);
 
 app.use("/api/v1/photos", photosRouter);
 app.use("/api/v1/rewards", rewardsRouter);
+
+// The error handler must be registered before any other error middleware and after all controllers
+Sentry.setupExpressErrorHandler(app);
 
 // Global Error Handler
 app.use(errorHandler);

@@ -136,3 +136,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 /src/generated/prisma
+
+# Sentry Config File
+.sentryclirc

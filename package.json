@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc --build && npm run sentry:sourcemaps",
     "start": "node ./dist/app.js",
-    "dev": "nodemon ./src/app.ts"
+    "dev": "nodemon ./src/app.ts",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org botcmd-systems-private-limited --project morphify-node ./dist && sentry-cli sourcemaps upload --org botcmd-systems-private-limited --project morphify-node ./dist"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -38,6 +39,8 @@
     "@aws-sdk/s3-request-presigner": "^3.821.0",
     "@fal-ai/client": "^1.5.0",
     "@prisma/client": "^6.8.2",
+    "@sentry/cli": "^2.46.0",
+    "@sentry/node": "^9.30.0",
     "axios": "^1.9.0",
     "bullmq": "^5.53.2",
     "cheerio": "^1.0.0",
