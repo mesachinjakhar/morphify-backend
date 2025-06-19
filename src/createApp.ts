@@ -22,7 +22,7 @@ app.use(passport.initialize());
 // Routes
 app.get("/api/v1/ping", (req, res) => {
   console.log("request received");
-  res.send("pong");
+  res.status(200).send("pong");
 });
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
