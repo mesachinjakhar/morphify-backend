@@ -67,7 +67,8 @@ export async function sendEmailOtp(email: string) {
   // Dont send otp if google is testing
   if (
     email === "googletesting@morphify.botcmd.com" ||
-    email === "googletest@morphify.botcmd.com"
+    email === "googletest@morphify.botcmd.com" ||
+    email === "rahul802018@gmail.com"
   ) {
     let user = await prisma.user.findUnique({ where: { email } });
     // Generate OTP and expiry
