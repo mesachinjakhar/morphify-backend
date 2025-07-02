@@ -349,7 +349,7 @@ router.post("/fal-ai/webhook/train", async (req, res) => {
     },
     data: {
       trainingStatus: "GENERATED",
-      tensorPath: req.body.diffusers_lora_file.url,
+      tensorPath: req.body.payload.diffusers_lora_file.url,
     },
   });
 
