@@ -44,38 +44,33 @@ router.post("/training", authMiddleware, async (req, res) => {
   // Step 3: Create a trigger word for Model creation
   const triggerWord = createUniqueTriggerWord(parsedBody.data.name);
 
+  // Step 4: Send request to Fal Ai for Model Generation
+  const { request_id, response_url } = await falAiClient.trainModel(
+    parsedBody.data.zipUrl,
+    triggerWord
+  );
+
+  // Step 5: Insert the Model details into Database
+  const data = await prisma.model.create({
+    data: {
+      name: parsedBody.data.name,
+      type: parsedBody.data.type,
+      age: parsedBody.data.age,
+      ethnicity: parsedBody.data.ethnicity,
+      eyeColor: parsedBody.data.eyeColor,
+      bald: parsedBody.data.bald,
+      userId: user.id,
+      falAiRequestId: request_id,
+      zipUrl: parsedBody.data.zipUrl,
+      triggerWord: triggerWord,
+    },
+  });
+
   // Step 6: Send Response
   res.json({
     status: "success",
+    modelId: data.id,
   });
-
-  // Step 4: Send request to Fal Ai for Model Generation
-  // const { request_id, response_url } = await falAiClient.trainModel(
-  //   parsedBody.data.zipUrl,
-  //   triggerWord
-  // );
-
-  // Step 5: Insert the Model details into Database
-  // const data = await prisma.model.create({
-  //   data: {
-  //     name: parsedBody.data.name,
-  //     type: parsedBody.data.type,
-  //     age: parsedBody.data.age,
-  //     ethnicity: parsedBody.data.ethnicity,
-  //     eyeColor: parsedBody.data.eyeColor,
-  //     bald: parsedBody.data.bald,
-  //     userId: user.id,
-  //     falAiRequestId: request_id,
-  //     zipUrl: parsedBody.data.zipUrl,
-  //     triggerWord: triggerWord,
-  //   },
-  // });
-
-  // Step 6: Send Response
-  // res.json({
-  //   status: "success",
-  //   modelId: data.id,
-  // });
 });
 
 // router.post("/generate", async (req, res) => {
