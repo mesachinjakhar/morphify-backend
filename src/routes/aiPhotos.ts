@@ -70,6 +70,7 @@ router.post("/training", authMiddleware, async (req, res) => {
 
   // Step 6: Send Response
   res.json({
+    status: "success",
     modelId: data.id,
   });
 });
