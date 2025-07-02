@@ -23,8 +23,6 @@ const falAiClient = new FalAIModel();
 
 const router = Router();
 
-const USER_ID = "12345678910";
-
 router.post("/training", authMiddleware, async (req, res) => {
   // Step 1: Check if body is valid or not
   const parsedBody = TrainModel.safeParse(req.body);
@@ -320,24 +318,24 @@ router.get("/pack/bulk", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/image/bulk", async (req, res) => {
-  const ids = req.query.images as string[];
-  const limit = (req.query.limit as string) || "10";
-  const offset = (req.query.offset as string) || "0";
+// router.get("/image/bulk", async (req, res) => {
+//   const ids = req.query.images as string[];
+//   const limit = (req.query.limit as string) || "10";
+//   const offset = (req.query.offset as string) || "0";
 
-  const imagesData = await prisma.outputImages.findMany({
-    where: {
-      id: { in: ids },
-      userId: USER_ID,
-    },
-    skip: parseInt(offset),
-    take: parseInt(limit),
-  });
+//   const imagesData = await prisma.outputImages.findMany({
+//     where: {
+//       id: { in: ids },
+//       userId: USER_ID,
+//     },
+//     skip: parseInt(offset),
+//     take: parseInt(limit),
+//   });
 
-  res.json({
-    images: imagesData,
-  });
-});
+//   res.json({
+//     images: imagesData,
+//   });
+// });
 
 router.post("/fal-ai/webhook/train", async (req, res) => {
   console.log("train webhook called with body:", req.body);
