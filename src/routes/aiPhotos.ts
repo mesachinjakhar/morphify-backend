@@ -341,6 +341,8 @@ router.post("/fal-ai/webhook/train", async (req, res) => {
   console.log("train webhook called with body:", req.body);
   const requestId = req.body.request_id;
 
+  console.log("fal ai sent this request body: ", req.body);
+
   await prisma.model.updateMany({
     where: {
       falAiRequestId: requestId,
