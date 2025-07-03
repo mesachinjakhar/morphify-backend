@@ -203,6 +203,13 @@ export async function resendEmailOtp(email: string) {
     },
   });
 
+  sendEmail({
+    to: email,
+    subject: "Your One-Time Password",
+    htmlBody: `<p>Your OTP is <b>${otp}</b></p>`,
+    textBody: `Your OTP is ${otp}`,
+  });
+
   return {
     status: "success",
     type: "resend",
