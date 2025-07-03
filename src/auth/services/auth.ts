@@ -6,6 +6,7 @@ import isEligibleForOtp from "../utils/isEligibleForOtp";
 import generateOtp from "../utils/generateOtp";
 import { isBefore } from "date-fns"; // for checking expiry
 import jwt from "jsonwebtoken";
+import { sendEmail } from "../utils/sesClient";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -137,6 +138,13 @@ export async function sendEmailOtp(email: string) {
       otp,
       otpExpiresAt,
     },
+  });
+
+  sendEmail({
+    to: email,
+    subject: "Your One-Time Password",
+    htmlBody: `<p>Your OTP is <b>${otp}</b></p>`,
+    textBody: `Your OTP is ${otp}`,
   });
 
   return {
