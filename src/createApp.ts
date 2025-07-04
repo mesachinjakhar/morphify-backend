@@ -6,6 +6,7 @@ import aiPhotosRouter from "./routes/aiPhotos";
 import errorHandler from "./handlers/errorHandler";
 import photosRouter from "./routes/photosRoutes";
 import rewardsRouter from "./routes/rewardsRoutes";
+import purchasesRouter from "./routes/purchasesRoute";
 import passport from "passport";
 import "./auth/strategies/google";
 import "./instrument.js";
@@ -30,6 +31,7 @@ app.use("/api/ai-photos", aiPhotosRouter);
 
 app.use("/api/v1/photos", photosRouter);
 app.use("/api/v1/rewards", rewardsRouter);
+app.use("/api/v1/purchases", purchasesRouter);
 
 // The error handler must be registered before any other error middleware and after all controllers
 Sentry.setupExpressErrorHandler(app);

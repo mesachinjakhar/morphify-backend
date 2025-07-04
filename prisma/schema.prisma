@@ -220,8 +220,15 @@ model AdRewardTransaction {
   userId String
 }
 
-
-
+model IapProduct {
+  id          Int      @id @default(autoincrement())
+  productId   String   @unique    // same as SKU, like "mstars_99"
+  name        String?             // optional friendly name
+  credits     Int                 // how many mstars to give
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
 
 // -----------------------------------------------------------------------------------
 // Enums
