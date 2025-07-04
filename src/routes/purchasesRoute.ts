@@ -38,7 +38,9 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
     });
 
     if (!product || !product.active) {
-      res.status(400).json({ message: "Invalid or inactive productId" });
+      res
+        .status(400)
+        .json({ status: "fail", message: "Invalid or inactive productId" });
       return;
     }
 
@@ -59,7 +61,7 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error("purchase route error", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ status: "fail", message: "Server error" });
   }
 });
 
