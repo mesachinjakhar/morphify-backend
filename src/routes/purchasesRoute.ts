@@ -9,7 +9,7 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
   const user = req.user as { id: string };
 
   if (!user || !user.id) {
-    res.status(400).json({ error: "Missing userId" });
+    res.status(400).json({ status: "fail", message: "Missing userId" });
     return;
   }
 
@@ -18,14 +18,16 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
   const { productId, purchaseToken } = req.body;
 
   if (!purchaseToken || !productId) {
-    res.status(400).json({ error: "Missing purchaseToken or productId" });
+    res
+      .status(400)
+      .json({ status: "fail", message: "Missing purchaseToken or productId" });
     return;
   }
 
   const isValid = await verifyGooglePurchase(purchaseToken, productId);
 
   if (!isValid) {
-    res.status(400).json({ error: "Invalid purchase token" });
+    res.status(400).json({ message: "Invalid purchase token" });
     return;
   }
 
@@ -36,7 +38,7 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
     });
 
     if (!product || !product.active) {
-      res.status(400).json({ error: "Invalid or inactive productId" });
+      res.status(400).json({ message: "Invalid or inactive productId" });
       return;
     }
 
