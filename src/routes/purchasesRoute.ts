@@ -27,7 +27,7 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
   const isValid = await verifyGooglePurchase(purchaseToken, productId);
 
   if (!isValid) {
-    res.status(400).json({ message: "Invalid purchase token" });
+    res.status(400).json({ status: "fail", message: "Invalid purchase token" });
     return;
   }
 
