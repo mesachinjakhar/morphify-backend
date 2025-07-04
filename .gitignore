@@ -139,3 +139,4 @@ dist
 
 # Sentry Config File
 .sentryclirc
+google-service-account.json

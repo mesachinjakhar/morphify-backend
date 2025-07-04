@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import authMiddleware from "../middlewares/authMiddleware";
+import { verifyGooglePurchase } from "../utils/verifyGooglePurchase";
 
 const router = Router();
 
@@ -14,10 +15,17 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
 
   const userId = user.id;
 
-  const { productId } = req.body;
+  const { productId, purchaseToken } = req.body;
 
-  if (!userId || !productId) {
-    res.status(400).json({ error: "Missing userId or productId" });
+  if (!purchaseToken || !productId) {
+    res.status(400).json({ error: "Missing purchaseToken or productId" });
+    return;
+  }
+
+  const isValid = await verifyGooglePurchase(purchaseToken, productId);
+
+  if (!isValid) {
+    res.status(400).json({ error: "Invalid purchase token" });
     return;
   }
 
