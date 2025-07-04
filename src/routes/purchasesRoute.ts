@@ -1,7 +1,10 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import authMiddleware from "../middlewares/authMiddleware";
-import { verifyGooglePurchase } from "../utils/verifyGooglePurchase";
+import {
+  verifyGoogleProductPurchase,
+  verifyGoogleSubscriptionPurchase,
+} from "../utils/verifyGooglePurchase";
 
 const router = Router();
 
@@ -24,7 +27,13 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
     return;
   }
 
-  const isValid = await verifyGooglePurchase(purchaseToken, productId);
+  let isValid = false;
+
+  if (productId === "no_ads_monthly") {
+    isValid = await verifyGoogleSubscriptionPurchase(purchaseToken, productId);
+  } else {
+    isValid = await verifyGoogleProductPurchase(purchaseToken, productId);
+  }
 
   if (!isValid) {
     res.status(400).json({ status: "fail", message: "Invalid purchase token" });
