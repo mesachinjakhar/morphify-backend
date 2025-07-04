@@ -47,7 +47,7 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
     const creditsToGrant = product.credits;
 
     // increment user balance
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { id: userId },
       data: {
         mstarsBalance: { increment: creditsToGrant },
@@ -58,6 +58,7 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
       status: "success",
       message: "Credits granted",
       creditsGranted: creditsToGrant,
+      newBalance: user.mstarsBalance,
     });
   } catch (err) {
     console.error("purchase route error", err);
