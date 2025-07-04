@@ -24,6 +24,18 @@ async function main() {
       mstarsCostPerCall: 5,
     },
   });
+
+  await prisma.iapProduct.upsert({
+    where: { productId: "no_ads_monthly" },
+    update: {},
+    create: {
+      productId: "no_ads_monthly",
+      name: "No Ads Monthly",
+      credits: 0, // subscriptions do not grant credits
+      active: true,
+    },
+  });
+
 }
 
 main()

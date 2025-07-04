@@ -49,6 +49,7 @@ model User {
   mstarsBalance Float           @default(0)
   heldBalance Float @default(0)
   showAds Boolean @default(true)
+  adFreeUntil DateTime?
   name          String?
   dateOfBirth   String? 
   gender        String?

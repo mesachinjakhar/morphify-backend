@@ -44,6 +44,25 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
       return;
     }
 
+    if (productId === "no_ads_monthly") {
+      // grant ad-free for 1 month from today
+      const adFreeUntil = new Date();
+      adFreeUntil.setMonth(adFreeUntil.getMonth() + 1);
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { showAds: false, adFreeUntil },
+      });
+
+      res.status(200).json({
+        status: "success",
+        message: "Ad-free subscription activated",
+        adFreeUntil,
+        type: "ads-subscription",
+      });
+      return;
+    }
+
     const creditsToGrant = product.credits;
 
     // increment user balance
