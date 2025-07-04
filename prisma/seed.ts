@@ -24,16 +24,6 @@ async function main() {
       mstarsCostPerCall: 5,
     },
   });
-
-  await prisma.iapProduct.createMany({
-    data: [
-      { productId: "mstars_99", name: "99 Mstars Pack", credits: 99 },
-      { productId: "mstars_500", name: "500 Mstars Pack", credits: 550 },
-      { productId: "mstars_1000", name: "1000 Mstars Pack", credits: 1150 },
-      { productId: "mstars_2500", name: "2500 Mstars Pack", credits: 3125 },
-      { productId: "mstars_5000", name: "5000 Mstars Pack", credits: 6500 },
-    ],
-  });
 }
 
 main()
