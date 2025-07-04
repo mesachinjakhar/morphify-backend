@@ -51,10 +51,10 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
     });
 
     res.status(200).json({
+      status: "success",
       message: "Credits granted",
       creditsGranted: creditsToGrant,
     });
-    return;
   } catch (err) {
     console.error("purchase route error", err);
     res.status(500).json({ error: "Server error" });
