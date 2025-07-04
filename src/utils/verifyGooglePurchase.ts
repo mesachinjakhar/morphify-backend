@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import path from "path";
 
 export async function verifyGooglePurchase(
   purchaseToken: string,
@@ -6,7 +7,7 @@ export async function verifyGooglePurchase(
 ): Promise<boolean> {
   try {
     const auth = new google.auth.GoogleAuth({
-      keyFile: "./google-service-account.json", // your service account JSON
+      keyFile: path.resolve(__dirname, "../../google-service-account.json"),
       scopes: ["https://www.googleapis.com/auth/androidpublisher"],
     });
 
@@ -26,10 +27,10 @@ export async function verifyGooglePurchase(
     console.log("Google Play verification response", result.data);
 
     /**
-     * purchaseState
-     * 0: Purchased
-     * 1: Canceled
-     * 2: Pending
+     * purchaseState:
+     * 0 = Purchased
+     * 1 = Canceled
+     * 2 = Pending
      */
     if (result.data.purchaseState === 0) {
       return true;
