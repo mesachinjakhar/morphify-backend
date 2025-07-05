@@ -142,7 +142,7 @@ export async function sendEmailOtp(email: string) {
 
   await sendEmail({
     to: email,
-    subject: `Morphify AI: Your One-Time Password is ${otp}`, // OTP in subject
+    subject: `Morphify AI: Your OTP is ${otp}`, // OTP in subject
     htmlBody: `
     <!DOCTYPE html>
     <html>
@@ -152,10 +152,12 @@ export async function sendEmailOtp(email: string) {
       </head>
       <body style="font-family: Arial, sans-serif; color: #333;">
         <div style="max-width:600px; margin:auto; padding:20px;">
-          <h1 style="color:#4a90e2;">Morphify AI</h1>
+          <h1 style="background: linear-gradient(90deg, #00AEEF, #8E2DE2, #FF0080); -webkit-background-clip: text; color: transparent;">
+                    Morphify AI
+          </h1>
           <p>Hello,</p>
           <p>Use the following one-time password (OTP) to verify your account & complete your sign-in:</p>
-          <h2 style="color:#4a90e2; letter-spacing: 2px;">${otp}</h2>
+          <h2 style="color:#8E2DE2; letter-spacing: 2px;">${otp}</h2>
           <p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p>
           <p>If you did not request this, you can safely ignore this email.</p>
           <br/>
