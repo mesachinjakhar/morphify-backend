@@ -150,7 +150,7 @@ export async function sendEmailOtp(email: string) {
         <meta charset="UTF-8">
         <title>Your Morphify AI OTP</title>
       </head>
-      <body style="font-family: Arial, sans-serif; color: #333;">
+  <body style="font-family: Arial, sans-serif; color: #333;">
         <div style="max-width:600px; margin:auto; padding:20px;">
           <h1 style="background: linear-gradient(90deg, #00AEEF, #8E2DE2, #FF0080); -webkit-background-clip: text; color: transparent;">
                     Morphify AI
@@ -161,7 +161,7 @@ export async function sendEmailOtp(email: string) {
           <p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p>
           <p>If you did not request this, you can safely ignore this email.</p>
           <br/>
-          <p>Thanks,<br/>The Morphify AI Team</p>
+          <p>Thanks,<br/>Morphify AI Team</p>
         </div>
       </body>
     </html>
