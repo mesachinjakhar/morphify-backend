@@ -27,8 +27,8 @@ async function createAiFilter(aiModelId, name, additionalCost = 0) {
 // Example usage:
 (async () => {
   try {
-    const modelId = "849a89f6-00d1-45e5-bd16-ee3a8f32597a";
-    const filterName = "Ghibli Studio Style";
+    const modelId = "58ae491f-3879-43bc-bdf4-a640a38adb82";
+    const filterName = "Restore Old Images";
     await createAiFilter(modelId, filterName);
   } catch (e) {
     console.error("Error creating AiFilter:", e);
