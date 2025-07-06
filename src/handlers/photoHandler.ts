@@ -156,7 +156,16 @@ export class PhotoHandler {
   };
 
   public getCost = async (req: Request, res: Response, next: NextFunction) => {
-    const { aiFilterId, packId, numOfPhotos } = req.body;
+    const { aiFilterId, packId, numOfPhotos, isModel } = req.body;
+
+    if (isModel) {
+      res.status(200).json({
+        status: "success",
+        message: "cost calculated successfully",
+        data: { cost: 200 },
+      });
+      return;
+    }
 
     if (!aiFilterId && !packId) {
       throw new CustomError("Either provide Ai Filter Id or Pack id", 400);
