@@ -462,7 +462,7 @@ export const updateLocation = async (req: Request, res: Response) => {
 };
 
 export const showAds = async (req: Request, res: Response) => {
-  let user = req.body.user;
+  let user = req.user;
   if (!user) {
     res.status(400).json({ status: "fail", message: "User id not found" });
     return;
