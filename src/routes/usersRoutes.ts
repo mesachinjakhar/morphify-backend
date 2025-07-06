@@ -9,6 +9,7 @@ import {
   updateProfile,
   deleteAccount,
   updateLocation,
+  showAds,
 } from "../handlers/users";
 import { Router } from "express";
 import passport from "passport";
@@ -30,5 +31,6 @@ router.delete(
   deleteAccount
 );
 router.post("/location", authMiddleware, updateLocation);
+router.get("/showads", authMiddleware, showAds);
 
 export default router;

@@ -460,3 +460,21 @@ export const updateLocation = async (req: Request, res: Response) => {
     return;
   }
 };
+
+export const showAds = async (req: Request, res: Response) => {
+  let user = req.body.user;
+  if (!user) {
+    res.status(400).json({ status: "fail", message: "User id not found" });
+    return;
+  }
+
+  let userId = user.id;
+
+  const dbUser = await prisma.user.findUnique({ where: { id: userId } });
+  if (!dbUser) {
+    res.status(400).json({ status: "fail", message: "User not found" });
+    return;
+  }
+
+  res.status(200).json({ status: "success", showAds: dbUser.showAds });
+};
