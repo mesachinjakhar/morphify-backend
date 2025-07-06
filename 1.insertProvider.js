@@ -6,7 +6,7 @@ async function main() {
   // 1. Create the provider (or find if it already exists)
   let provider = await prisma.aiProvider.create({
     data: {
-      name: "nightmare",
+      name: "codeslake",
     },
   });
 
@@ -15,9 +15,9 @@ async function main() {
   // 2. Create the model under that provider
   const model = await prisma.aiModel.create({
     data: {
-      name: "realesrgan",
+      name: "ifandefocusdeblur",
       baseCostPerCall: 0.15, // set real USD cost as needed
-      mstarsCostPerCall: 5, // set your mstars cost
+      mstarsCostPerCall: 1, // set your mstars cost
       aiProvider: {
         connect: { id: provider.id },
       },

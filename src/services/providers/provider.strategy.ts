@@ -9,6 +9,7 @@ import { Gpt1ImageProvider } from "./openai/gpt1image";
 import { RestoreImageProvider } from "./flux/restoreimage";
 import { GfpganProvider } from "./tencentarc/gfpgan";
 import { RealEsrganProvider } from "./nightmare/realesrgan";
+import { IfanDefocusDeblurProvider } from "./codeslake/ifandefocusdeblur";
 
 /**
  * This function acts as our directory. Given a name, it finds the right cook.
@@ -40,6 +41,12 @@ export const getProvider = (
   if (providerName === "nightmare") {
     if (modelName === "realesrgan") {
       return new RealEsrganProvider();
+    }
+  }
+
+  if (providerName === "codeslake") {
+    if (modelName === "ifandefocusdeblur") {
+      return new IfanDefocusDeblurProvider();
     }
   }
 
