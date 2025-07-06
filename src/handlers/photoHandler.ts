@@ -159,10 +159,16 @@ export class PhotoHandler {
     const { aiFilterId, packId, numOfPhotos, isModel } = req.body;
 
     if (isModel) {
+      const model = await prisma.aiModel.findUnique({
+        where: { id: "849a89f6-00d1-45e5-bd16-ee3a8f32597a" },
+      });
+      if (!model) {
+        throw new CustomError("Ai Model not found", 500);
+      }
       res.status(200).json({
         status: "success",
         message: "cost calculated successfully",
-        data: { cost: 200 },
+        data: { cost: model.mstarsCostPerCall },
       });
       return;
     }
