@@ -7,6 +7,8 @@ import { IProvider } from "./provider.interface";
 // We must import our new cook to add them to the index.
 import { Gpt1ImageProvider } from "./openai/gpt1image";
 import { RestoreImageProvider } from "./flux/restoreimage";
+import { GfpganProvider } from "./tencentarc/gfpgan";
+import { RealEsrganProvider } from "./nightmare/realesrgan";
 
 /**
  * This function acts as our directory. Given a name, it finds the right cook.
@@ -26,6 +28,18 @@ export const getProvider = (
   if (providerName === "flux") {
     if (modelName === "restoreimage") {
       return new RestoreImageProvider();
+    }
+  }
+
+  if (providerName === "tencentarc") {
+    if (modelName === "gfpgan") {
+      return new GfpganProvider();
+    }
+  }
+
+  if (providerName === "nightmare") {
+    if (modelName === "realesrgan") {
+      return new RealEsrganProvider();
     }
   }
 
