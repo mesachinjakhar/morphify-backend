@@ -24,6 +24,8 @@ export class IfanDefocusDeblurProvider implements IProvider {
 
   async generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
     const prediction = await this.replicate.predictions.create({
+      version:
+        "ea3b2e163e2ad629fb23e81a1cc9e485c32aa4a53eba4fe08b7dbdd39e6e381e",
       model: "codeslake/ifan-defocus-deblur",
       input: {
         image: input.imageUrl,
