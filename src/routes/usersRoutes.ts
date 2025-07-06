@@ -8,6 +8,7 @@ import {
   getMstarBalance,
   updateProfile,
   deleteAccount,
+  updateLocation,
 } from "../handlers/users";
 import { Router } from "express";
 import passport from "passport";
@@ -28,5 +29,6 @@ router.delete(
   passport.authenticate("google-id-token", { session: false }),
   deleteAccount
 );
+router.post("/location", authMiddleware, updateLocation);
 
 export default router;

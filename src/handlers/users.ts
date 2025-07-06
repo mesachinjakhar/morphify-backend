@@ -418,3 +418,45 @@ export const deleteAccount = async (req: Request, res: Response) => {
     return;
   }
 };
+
+interface UpdateLocationBody {
+  userId: string;
+  city: string | null;
+  country: string | null;
+  postalCode: string | null;
+}
+
+export const updateLocation = async (req: Request, res: Response) => {
+  const { userId, city, country, postalCode } = req.body as UpdateLocationBody;
+
+  if (!userId) {
+    res.status(400).json({ error: "Missing userId" });
+    return;
+  }
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        city,
+        country,
+        postalCode,
+      },
+    });
+
+    res.json({
+      status: "success",
+      data: {
+        id: updatedUser.id,
+        city: updatedUser.city,
+        country: updatedUser.country,
+        postalCode: updatedUser.postalCode,
+      },
+    });
+    return;
+  } catch (error) {
+    console.error("Failed to update user location:", error);
+    res.status(500).json({ error: "Internal server error" });
+    return;
+  }
+};
