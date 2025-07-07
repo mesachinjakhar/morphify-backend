@@ -21,7 +21,6 @@ dotenv.config();
 const app = express();
 
 // Middlewares
-app.use(xssSanitizer);
 app.use(helmet()); // Sets secure HTTP headers
 app.use(compression()); // Compress responses
 app.use(express.json());
