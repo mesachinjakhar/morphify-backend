@@ -7,8 +7,14 @@ import generateOtp from "../utils/generateOtp";
 import { isBefore } from "date-fns"; // for checking expiry
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/sesClient";
+import redisClient from "../config/redis";
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
+const redis = redisClient;
+
+const VERIFY_ATTEMPT_LIMIT = 5;
+const VERIFY_ATTEMPT_WINDOW_SEC = 60; // 1 minute window
 
 export async function handleSocialLogin(profile: any) {
   if (!JWT_SECRET) {
@@ -263,7 +269,6 @@ export async function resendEmailOtp(email: string) {
 
 export async function verifyEmailOtp(email: string, otp: string) {
   if (!JWT_SECRET) {
-    // This stops the app from crashing and gives a clear error
     throw new Error("JWT_SECRET is not defined in the environment variables.");
   }
   if (!email) {
@@ -273,7 +278,6 @@ export async function verifyEmailOtp(email: string, otp: string) {
       message: "Email address not provided in body",
     };
   }
-
   if (!otp) {
     return {
       status: "fail",
@@ -282,32 +286,27 @@ export async function verifyEmailOtp(email: string, otp: string) {
     };
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  if (!user) {
+  // rate limiting via Redis
+  const key = `verify_attempts:${email}`;
+  const current = await redis.incr(key);
+  if (current === 1) {
+    await redis.expire(key, VERIFY_ATTEMPT_WINDOW_SEC);
+  }
+  if (current > VERIFY_ATTEMPT_LIMIT) {
     return {
       status: "fail",
       type: "verify",
-      message: "Invalid OTP",
+      message: "Too many verification attempts. Please try again later.",
     };
   }
 
-  if (user.provider !== "EMAIL") {
-    return {
-      status: "fail",
-      type: "verify",
-      message: `Invalid OTP`,
-    };
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user || user.provider !== "EMAIL") {
+    return { status: "fail", type: "verify", message: "Invalid OTP" };
   }
 
   if (!user.otp || !user.otpExpiresAt) {
-    return {
-      status: "fail",
-      type: "verify",
-      message: "Invalid OTP",
-    };
+    return { status: "fail", type: "verify", message: "Invalid OTP" };
   }
 
   const now = new Date();
@@ -323,7 +322,7 @@ export async function verifyEmailOtp(email: string, otp: string) {
     return { status: "fail", type: "verify", message: "Invalid OTP" };
   }
 
-  // ✅ OTP is valid — clear OTP from DB (optional but recommended)
+  // ✅ clear OTP after success
   await prisma.user.update({
     where: { email },
     data: {
@@ -332,8 +331,10 @@ export async function verifyEmailOtp(email: string, otp: string) {
     },
   });
 
+  // Optionally: reset rate limiter after success
+  await redis.del(key);
+
   const jwtToken = jwt.sign(user, JWT_SECRET);
-  // You might also generate a session/token here
 
   return {
     status: "success",
