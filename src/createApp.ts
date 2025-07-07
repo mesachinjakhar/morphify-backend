@@ -13,22 +13,16 @@ import "./instrument.js";
 import * as Sentry from "@sentry/node";
 import helmet from "helmet";
 import cors from "cors";
-import xss from "xss-clean";
 import compression from "compression";
+import { xssSanitizer } from "./middlewares/xssSanitizer";
 
 dotenv.config();
 
 const app = express();
 
 // Middlewares
+app.use(xssSanitizer);
 app.use(helmet()); // Sets secure HTTP headers
-// Only apply to routes with a body
-app.use((req, res, next) => {
-  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
-    return xss()(req, res, next);
-  }
-  next();
-});
 app.use(compression()); // Compress responses
 app.use(express.json());
 app.use(passport.initialize());
