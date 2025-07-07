@@ -33,9 +33,8 @@ export class Gpt1ImageProvider implements IProvider {
 
   private getExtension(url: string): string {
     const cleanUrl = url.split("?")[0]; // remove query params
-    return cleanUrl
-      .slice(((cleanUrl.lastIndexOf(".") - 1) >>> 0) + 1)
-      .toLowerCase();
+    const parts = cleanUrl.split(".");
+    return parts.length > 1 ? parts.pop()!.toLowerCase() : "";
   }
 
   // Step 1. Validate Body
