@@ -17,6 +17,7 @@ import fs from "fs";
 import path from "path";
 import { z } from "zod";
 import { preprocessImage } from "../../../utils/preprocessImage";
+import { preprocessWithCache } from "../../../utils/preprocessWithCache";
 
 // Input Schema
 const ValidInputSchema = z.object({
@@ -62,7 +63,7 @@ export class Gpt1ImageProvider implements IProvider {
 
     let imageUrl = input.imageUrl;
 
-    imageUrl = await preprocessImage(imageUrl, ["png", "jpeg", "webp"]);
+    imageUrl = await preprocessWithCache(imageUrl, this.supportedExtensions);
 
     // const ext = this.getExtension(imageUrl);
     // const isSupported = this.supportedExtensions.includes("." + ext);

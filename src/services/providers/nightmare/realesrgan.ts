@@ -1,4 +1,5 @@
 import { preprocessImage } from "../../../utils/preprocessImage";
+import { preprocessWithCache } from "../../../utils/preprocessWithCache";
 import { convertToPng } from "../../../utils/convertToPng";
 import {
   IProvider,
@@ -37,7 +38,7 @@ export class RealEsrganProvider implements IProvider {
   async generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
     let imageUrl = input.imageUrl;
 
-    imageUrl = await preprocessImage(imageUrl, this.supportedExtensions);
+    imageUrl = await preprocessWithCache(imageUrl, this.supportedExtensions);
 
     const prediction = await this.replicate.predictions.create({
       model: "nightmareai/real-esrgan",
