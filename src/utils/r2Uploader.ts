@@ -26,7 +26,7 @@ export async function uploadBufferToR2(
   console.log("Uploading converted image to R2:", fullKey);
   await s3.send(new PutObjectCommand(uploadParams));
 
-  const publicUrl = `${R2_PUBLIC_URL_BASE}/${fullKey}`;
+  const publicUrl = `${R2_PUBLIC_URL_BASE}${fullKey}`;
   console.log("✅ Uploaded converted image to R2 at:", publicUrl);
 
   return publicUrl;

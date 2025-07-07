@@ -31,7 +31,7 @@ type ValidInputType = z.infer<typeof ValidInputSchema>;
 // Main Class
 export class Gpt1ImageProvider implements IProvider {
   // Supported image extensions
-  private supportedExtensions = [".png", ".jpeg", ".webp"];
+  private supportedExtensions = ["png", "jpeg", "webp"];
 
   private getExtension(url: string): string {
     const cleanUrl = url.split("?")[0]; // remove query params
