@@ -23,6 +23,6 @@ router.post(
   socialAuthHandler
 );
 
-router.post("/email", verifyOtpLimiter, emailAuthHandler);
+router.post("/email", emailAuthHandler);
 
 export default router;
