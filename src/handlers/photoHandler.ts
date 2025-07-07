@@ -160,7 +160,7 @@ export class PhotoHandler {
 
     if (isModel) {
       const model = await prisma.aiModel.findUnique({
-        where: { id: "849a89f6-00d1-45e5-bd16-ee3a8f32597a" },
+        where: { id: "f640f8fe-7bb2-4bdf-bf97-9fe35398690d" },
       });
       if (!model) {
         throw new CustomError("Ai Model not found", 500);
