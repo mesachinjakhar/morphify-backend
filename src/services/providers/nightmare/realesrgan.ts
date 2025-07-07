@@ -1,3 +1,4 @@
+import { convertToPng } from "../../../utils/convertToPng";
 import {
   IProvider,
   GenerateImageInput,
@@ -8,6 +9,9 @@ import Replicate from "replicate";
 
 export class RealEsrganProvider implements IProvider {
   private replicate: Replicate;
+
+  // Supported image extensions
+  private supportedExtensions = [".png", ".jpg", ".webp"];
 
   constructor() {
     this.replicate = new Replicate({
@@ -22,13 +26,30 @@ export class RealEsrganProvider implements IProvider {
     return { isValid: true, message: "Valid input." };
   }
 
+  private getExtension(url: string): string {
+    const cleanUrl = url.split("?")[0]; // remove query params
+    return cleanUrl
+      .slice(((cleanUrl.lastIndexOf(".") - 1) >>> 0) + 1)
+      .toLowerCase();
+  }
+
   async generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
+    let imageUrl = input.imageUrl;
+
+    const ext = this.getExtension(imageUrl);
+    const isSupported = this.supportedExtensions.includes("." + ext);
+
+    if (!isSupported) {
+      console.log(`🔁 Converting unsupported image format ".${ext}" to .png`);
+      imageUrl = await convertToPng(imageUrl);
+    }
+
     const prediction = await this.replicate.predictions.create({
       model: "nightmareai/real-esrgan",
       version:
         "f121d640bd286e1fdc67f9799164c1d5be36ff74576ee11c803ae5b665dd46aa", // the correct version hash for Real-ESRGAN
       input: {
-        image: input.imageUrl,
+        image: imageUrl,
         scale: 2, // 2x upscale
         face_enhance: true, // optional, you can also expose to users
       },

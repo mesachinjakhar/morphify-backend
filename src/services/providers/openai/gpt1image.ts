@@ -3,6 +3,7 @@
  * * This is the live implementation for the image edit provider.
  * It makes a real API call to OpenAI and handles all errors gracefully.
  */
+import { convertToPng } from "@/utils/convertToPng";
 import CustomError from "../../../utils/CustomError"; // Assuming path is correct
 import {
   IProvider,
@@ -27,9 +28,21 @@ type ValidInputType = z.infer<typeof ValidInputSchema>;
 
 // Main Class
 export class Gpt1ImageProvider implements IProvider {
+  // Supported image extensions
+  private supportedExtensions = [".png", ".jpeg", ".webp"];
+
+  private getExtension(url: string): string {
+    const cleanUrl = url.split("?")[0]; // remove query params
+    return cleanUrl
+      .slice(((cleanUrl.lastIndexOf(".") - 1) >>> 0) + 1)
+      .toLowerCase();
+  }
+
   // Step 1. Validate Body
   public validateInput(input: ValidInputType): ValidationResult {
     const parsedBody = ValidInputSchema.safeParse(input);
+
+    // Supported image extensions
 
     if (parsedBody.success) {
       // All checks passed!
@@ -46,6 +59,16 @@ export class Gpt1ImageProvider implements IProvider {
     input: GenerateImageInput
   ): Promise<GenerateImageOutput> {
     console.log("Model gpt-image-1 started processing image");
+
+    let imageUrl = input.imageUrl;
+
+    const ext = this.getExtension(imageUrl);
+    const isSupported = this.supportedExtensions.includes("." + ext);
+
+    if (!isSupported) {
+      console.log(`🔁 Converting unsupported image format ".${ext}" to .png`);
+      imageUrl = await convertToPng(imageUrl);
+    }
 
     try {
       // In a real app, you would get this from a secure config file.
@@ -64,7 +87,7 @@ export class Gpt1ImageProvider implements IProvider {
 
       // 1. Fetch the user's image from the provided URL as a buffer.
 
-      const imageResponse = await axios.get(input.imageUrl, {
+      const imageResponse = await axios.get(imageUrl, {
         responseType: "arraybuffer",
       });
 

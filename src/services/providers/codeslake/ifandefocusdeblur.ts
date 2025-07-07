@@ -1,3 +1,4 @@
+import { convertToPng } from "../../../utils/convertToPng";
 import {
   IProvider,
   GenerateImageInput,
@@ -9,10 +10,19 @@ import Replicate from "replicate";
 export class IfanDefocusDeblurProvider implements IProvider {
   private replicate: Replicate;
 
+  private supportedExtensions = [".png", ".jpeg"];
+
   constructor() {
     this.replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,
     });
+  }
+
+  private getExtension(url: string): string {
+    const cleanUrl = url.split("?")[0]; // remove query params
+    return cleanUrl
+      .slice(((cleanUrl.lastIndexOf(".") - 1) >>> 0) + 1)
+      .toLowerCase();
   }
 
   validateInput(input: GenerateImageInput): ValidationResult {
@@ -23,12 +33,22 @@ export class IfanDefocusDeblurProvider implements IProvider {
   }
 
   async generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
+    let imageUrl = input.imageUrl;
+
+    const ext = this.getExtension(imageUrl);
+    const isSupported = this.supportedExtensions.includes("." + ext);
+
+    if (!isSupported) {
+      console.log(`🔁 Converting unsupported image format ".${ext}" to .png`);
+      imageUrl = await convertToPng(imageUrl);
+    }
+
     const prediction = await this.replicate.predictions.create({
       version:
         "ea3b2e163e2ad629fb23e81a1cc9e485c32aa4a53eba4fe08b7dbdd39e6e381e",
       model: "codeslake/ifan-defocus-deblur",
       input: {
-        image: input.imageUrl,
+        image: imageUrl,
       },
     });
 

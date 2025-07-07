@@ -1,3 +1,4 @@
+import { convertToPng } from "../../../utils/convertToPng";
 import {
   IProvider,
   GenerateImageInput,
@@ -8,6 +9,15 @@ import Replicate from "replicate";
 
 export class GfpganProvider implements IProvider {
   private replicate: Replicate;
+
+  private supportedExtensions = [".png", ".jpg", ".webp"];
+
+  private getExtension(url: string): string {
+    const cleanUrl = url.split("?")[0]; // remove query params
+    return cleanUrl
+      .slice(((cleanUrl.lastIndexOf(".") - 1) >>> 0) + 1)
+      .toLowerCase();
+  }
 
   constructor() {
     this.replicate = new Replicate({
@@ -23,11 +33,21 @@ export class GfpganProvider implements IProvider {
   }
 
   async generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
+    let imageUrl = input.imageUrl;
+
+    const ext = this.getExtension(imageUrl);
+    const isSupported = this.supportedExtensions.includes("." + ext);
+
+    if (!isSupported) {
+      console.log(`🔁 Converting unsupported image format ".${ext}" to .png`);
+      imageUrl = await convertToPng(imageUrl);
+    }
+
     // create prediction
     const prediction = await this.replicate.predictions.create({
       model: "tencentarc/gfpgan",
       input: {
-        img: input.imageUrl,
+        img: imageUrl,
         scale: 2, // upscaling factor
         version: 1.4, // you can pin a version if needed
       },
