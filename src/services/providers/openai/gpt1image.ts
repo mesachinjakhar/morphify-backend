@@ -3,7 +3,7 @@
  * * This is the live implementation for the image edit provider.
  * It makes a real API call to OpenAI and handles all errors gracefully.
  */
-import { convertToPng } from "@/utils/convertToPng";
+import { convertToPng } from "../../../utils/convertToPng";
 import CustomError from "../../../utils/CustomError"; // Assuming path is correct
 import {
   IProvider,
