@@ -11,12 +11,19 @@ import passport from "passport";
 import "./auth/strategies/google";
 import "./instrument.js";
 import * as Sentry from "@sentry/node";
+import helmet from "helmet";
+import cors from "cors";
+import xss from "xss-clean";
+import compression from "compression";
 
 dotenv.config();
 
 const app = express();
 
 // Middlewares
+app.use(helmet()); // Sets secure HTTP headers
+app.use(xss()); // Prevents XSS attacks
+app.use(compression()); // Compress responses
 app.use(express.json());
 app.use(passport.initialize());
 

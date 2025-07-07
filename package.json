@@ -16,6 +16,8 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/compression": "^1.8.1",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/express-session": "^1.18.1",
     "@types/form-data": "^2.2.1",
@@ -45,11 +47,15 @@
     "axios": "^1.9.0",
     "bullmq": "^5.53.2",
     "cheerio": "^1.0.0",
+    "compression": "^1.8.0",
+    "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^7.5.1",
     "express-session": "^1.18.1",
     "googleapis": "^150.0.1",
+    "helmet": "^8.1.0",
     "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
     "openai": "^5.3.0",
@@ -61,6 +67,7 @@
     "replicate": "^1.0.1",
     "sharp": "^0.34.2",
     "uuid": "^11.1.0",
+    "xss-clean": "^0.1.4",
     "zod": "^3.25.42"
   }
 }
