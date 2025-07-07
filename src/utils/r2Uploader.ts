@@ -12,7 +12,7 @@ export async function uploadBufferToR2(
   mimeType = "image/png"
 ): Promise<string> {
   // ✅ Prepend proper folder structure to key
-  const fullKey = `/converted/${key}`;
+  const fullKey = `converted/${key}`;
 
   const uploadParams = {
     Bucket: R2_BUCKET_NAME,
