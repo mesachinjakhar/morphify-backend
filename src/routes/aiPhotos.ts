@@ -51,7 +51,7 @@ router.post("/training", authMiddleware, async (req, res) => {
   // or you can adjust
   const transaction = await mstarManager.reserveMstars(
     user.id,
-    "12345",
+    "f640f8fe-7bb2-4bdf-bf97-9fe35398690d",
     1 // number of photos to be generated or tasks
   );
 
