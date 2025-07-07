@@ -1,3 +1,4 @@
+import { preprocessImage } from "../../../utils/preprocessImage";
 import { convertToPng } from "../../../utils/convertToPng";
 import {
   IProvider,
@@ -11,7 +12,7 @@ export class RealEsrganProvider implements IProvider {
   private replicate: Replicate;
 
   // Supported image extensions
-  private supportedExtensions = [".png", ".jpg", ".webp"];
+  private supportedExtensions = ["png", "jpg", "webp"];
 
   constructor() {
     this.replicate = new Replicate({
@@ -36,13 +37,7 @@ export class RealEsrganProvider implements IProvider {
   async generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
     let imageUrl = input.imageUrl;
 
-    const ext = this.getExtension(imageUrl);
-    const isSupported = this.supportedExtensions.includes("." + ext);
-
-    if (!isSupported) {
-      console.log(`🔁 Converting unsupported image format ".${ext}" to .png`);
-      imageUrl = await convertToPng(imageUrl);
-    }
+    imageUrl = await preprocessImage(imageUrl, this.supportedExtensions);
 
     const prediction = await this.replicate.predictions.create({
       model: "nightmareai/real-esrgan",

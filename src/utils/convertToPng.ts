@@ -15,7 +15,10 @@ export async function convertToPng(imageUrl: string): Promise<string> {
     throw new Error("Downloaded image buffer is empty.");
   }
 
-  const pngBuffer = await sharp(inputBuffer).png().toBuffer();
+  const pngBuffer = await sharp(inputBuffer)
+    .rotate() // ⬅ auto-orients based on EXIF
+    .png()
+    .toBuffer();
 
   if (!pngBuffer || pngBuffer.length === 0) {
     throw new Error("PNG conversion failed. Output buffer is empty.");

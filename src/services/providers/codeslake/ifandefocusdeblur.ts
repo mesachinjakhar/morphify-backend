@@ -1,3 +1,4 @@
+import { preprocessImage } from "../../../utils/preprocessImage";
 import { convertToPng } from "../../../utils/convertToPng";
 import {
   IProvider,
@@ -10,7 +11,7 @@ import Replicate from "replicate";
 export class IfanDefocusDeblurProvider implements IProvider {
   private replicate: Replicate;
 
-  private supportedExtensions = [".png", ".jpeg"];
+  private supportedExtensions = ["png", "jpeg"];
 
   constructor() {
     this.replicate = new Replicate({
@@ -35,13 +36,7 @@ export class IfanDefocusDeblurProvider implements IProvider {
   async generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
     let imageUrl = input.imageUrl;
 
-    const ext = this.getExtension(imageUrl);
-    const isSupported = this.supportedExtensions.includes("." + ext);
-
-    if (!isSupported) {
-      console.log(`🔁 Converting unsupported image format ".${ext}" to .png`);
-      imageUrl = await convertToPng(imageUrl);
-    }
+    imageUrl = await preprocessImage(imageUrl, this.supportedExtensions);
 
     const prediction = await this.replicate.predictions.create({
       version:

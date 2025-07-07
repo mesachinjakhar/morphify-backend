@@ -1,3 +1,4 @@
+import { preprocessImage } from "../../../utils/preprocessImage";
 import { convertToPng } from "../../../utils/convertToPng";
 import {
   IProvider,
@@ -10,7 +11,7 @@ import Replicate from "replicate";
 export class GfpganProvider implements IProvider {
   private replicate: Replicate;
 
-  private supportedExtensions = [".png", ".jpg", ".webp"];
+  private supportedExtensions = ["png", "jpg", "webp"];
 
   private getExtension(url: string): string {
     const cleanUrl = url.split("?")[0]; // remove query params
@@ -35,13 +36,7 @@ export class GfpganProvider implements IProvider {
   async generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
     let imageUrl = input.imageUrl;
 
-    const ext = this.getExtension(imageUrl);
-    const isSupported = this.supportedExtensions.includes("." + ext);
-
-    if (!isSupported) {
-      console.log(`🔁 Converting unsupported image format ".${ext}" to .png`);
-      imageUrl = await convertToPng(imageUrl);
-    }
+    imageUrl = await preprocessImage(imageUrl, this.supportedExtensions);
 
     // create prediction
     const prediction = await this.replicate.predictions.create({

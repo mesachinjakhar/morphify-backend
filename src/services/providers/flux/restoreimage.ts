@@ -1,5 +1,6 @@
 // src/services/providers/flux/fluxRestoreImageProvider.ts
 
+import { preprocessImage } from "../../../utils/preprocessImage";
 import { convertToPng } from "../../../utils/convertToPng";
 import {
   IProvider,
@@ -12,7 +13,7 @@ import Replicate from "replicate";
 export class RestoreImageProvider implements IProvider {
   private replicate: Replicate;
 
-  private supportedExtensions = [".png", ".jpeg", ".webp", ".gif"];
+  private supportedExtensions = ["png", "jpeg", "webp", "gif"];
 
   constructor() {
     this.replicate = new Replicate({
@@ -58,13 +59,7 @@ export class RestoreImageProvider implements IProvider {
   async generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
     let imageUrl = input.imageUrl;
 
-    const ext = this.getExtension(imageUrl);
-    const isSupported = this.supportedExtensions.includes("." + ext);
-
-    if (!isSupported) {
-      console.log(`🔁 Converting unsupported image format ".${ext}" to .png`);
-      imageUrl = await convertToPng(imageUrl);
-    }
+    imageUrl = await preprocessImage(imageUrl, this.supportedExtensions);
 
     // create the prediction
     const prediction = await this.replicate.predictions.create({

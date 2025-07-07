@@ -16,6 +16,7 @@ import FormData from "form-data";
 import fs from "fs";
 import path from "path";
 import { z } from "zod";
+import { preprocessImage } from "../../../utils/preprocessImage";
 
 // Input Schema
 const ValidInputSchema = z.object({
@@ -61,13 +62,15 @@ export class Gpt1ImageProvider implements IProvider {
 
     let imageUrl = input.imageUrl;
 
-    const ext = this.getExtension(imageUrl);
-    const isSupported = this.supportedExtensions.includes("." + ext);
+    imageUrl = await preprocessImage(imageUrl, ["png", "jpeg", "webp"]);
 
-    if (!isSupported) {
-      console.log(`🔁 Converting unsupported image format ".${ext}" to .png`);
-      imageUrl = await convertToPng(imageUrl);
-    }
+    // const ext = this.getExtension(imageUrl);
+    // const isSupported = this.supportedExtensions.includes("." + ext);
+
+    // if (!isSupported) {
+    //   console.log(`🔁 Converting unsupported image format ".${ext}" to .png`);
+    //   imageUrl = await convertToPng(imageUrl);
+    // }
 
     try {
       // In a real app, you would get this from a secure config file.
