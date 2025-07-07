@@ -22,7 +22,13 @@ const app = express();
 
 // Middlewares
 app.use(helmet()); // Sets secure HTTP headers
-app.use(xss()); // Prevents XSS attacks
+// Only apply to routes with a body
+app.use((req, res, next) => {
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    return xss()(req, res, next);
+  }
+  next();
+});
 app.use(compression()); // Compress responses
 app.use(express.json());
 app.use(passport.initialize());
