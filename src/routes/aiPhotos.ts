@@ -44,6 +44,17 @@ router.post("/training", authMiddleware, async (req, res) => {
   // Step 3: Create a trigger word for Model creation
   const triggerWord = createUniqueTriggerWord(parsedBody.data.name);
 
+  // 💰 Reserve M*Stars before kicking off the Fal AI call
+  const mstarManager = new MstarManager(prisma);
+
+  // Let’s assume you price ONE training, e.g. photosToBeGenerated = 1
+  // or you can adjust
+  const transaction = await mstarManager.reserveMstars(
+    user.id,
+    "12345",
+    1 // number of photos to be generated or tasks
+  );
+
   // Step 4: Send request to Fal Ai for Model Generation
   const { request_id, response_url } = await falAiClient.trainModel(
     parsedBody.data.zipUrl,
@@ -63,6 +74,7 @@ router.post("/training", authMiddleware, async (req, res) => {
       falAiRequestId: request_id,
       zipUrl: parsedBody.data.zipUrl,
       triggerWord: triggerWord,
+      mstarTransactionId: transaction.id,
     },
   });
 
@@ -341,7 +353,30 @@ router.post("/fal-ai/webhook/train", async (req, res) => {
   console.log("train webhook called with body:", req.body);
   const requestId = req.body.request_id;
 
-  console.log("fal ai sent this request body: ", req.body);
+  const model = await prisma.model.findFirst({
+    where: {
+      falAiRequestId: requestId,
+    },
+  });
+
+  if (!model) {
+    console.error(`Model not found for request_id: ${requestId}`);
+    res.status(404).json({ error: "model not found" });
+    return;
+  }
+
+  // ✅ Commit the reserved transaction since training succeeded
+  const mstarManager = new MstarManager(prisma);
+
+  try {
+    if (model.mstarTransactionId) {
+      await mstarManager.commitTransaction(model.mstarTransactionId);
+    } else {
+      console.warn(`No mstarTransactionId for model id ${model.id}`);
+    }
+  } catch (err) {
+    console.error("Failed to commit transaction:", err);
+  }
 
   await prisma.model.updateMany({
     where: {
@@ -354,7 +389,7 @@ router.post("/fal-ai/webhook/train", async (req, res) => {
   });
 
   res.json({
-    message: "webhook recieved",
+    message: "webhook received",
   });
 });
 

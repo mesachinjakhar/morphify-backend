@@ -106,6 +106,7 @@ model Model {
   updatedAt DateTime @updatedAt
   falAiRequestId String?
   zipUrl String
+  mstarTransactionId String?
   @@index([falAiRequestId])
 }
 
