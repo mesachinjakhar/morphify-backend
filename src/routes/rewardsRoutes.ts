@@ -184,7 +184,7 @@ router.get("/verify", async (req: Request, res: Response) => {
       console.log("Signature successfully verified!");
 
       const userId = query.user_id; // The user ID from the SSV callback
-      const rewardAmount = 0.25; // The specified reward amount
+      const rewardAmount = 1; // The specified reward amount
 
       // This single function handles both database operations atomically.
       await grantRewardAndRecordTransaction(
