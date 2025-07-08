@@ -101,7 +101,7 @@ export class Gpt1ImageProvider implements IProvider {
       form.append("image", imageBuffer, { filename: "input_image.png" });
       form.append(
         "prompt",
-        "Transform the input photo into a Studio Ghibli-style illustration. Use soft watercolor textures, gentle pastel colors, and dreamy lighting. The character should appear in a peaceful outdoor setting like a garden or forest, with simplified, cartoon-like shading and clean lines inspired by movies such as 'My Neighbor Totoro' or 'Spirited Away'. Avoid realism. Make it feel like a hand-painted animation cel from a heartwarming fantasy world."
+        `Ghiblify this photo: produce a hand‑painted, soft‑lit, watercolor‑textured scene reminiscent of Hayao Miyazaki’s studio, with rounded character features and lush natural backgrounds.`
       );
       form.append("n", "1");
       form.append("size", "1024x1024");
