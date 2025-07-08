@@ -101,16 +101,7 @@ export class Gpt1ImageProvider implements IProvider {
       form.append("image", imageBuffer, { filename: "input_image.png" });
       form.append(
         "prompt",
-        `Transform the provided image into a beautiful, high-detail anime illustration in the distinct style of Studio Ghibli.
-
-Scene and Style:
-Recreate the entire scene with a hand-painted aesthetic, soft and atmospheric lighting, and lush, richly detailed backgrounds (whether nature or cityscape). Match the composition of the original image exactly.
-
-Subject Instructions:
-
-If a person is present in the original image: Convert them into a character with expressive, Ghibli-style features. It is critical to strictly maintain the original pose, facial expression, and attire, adapting them faithfully to the anime style.
-
-If no person is present in the original image: Do not add a character. The illustration must only depict the original scene and objects, fully rendered in the Ghibli style. Focus entirely on the environment.`
+        `You are an advanced image style‑transfer model. Take the supplied image as input and recreate it in the style of a Studio Ghibli film (e.g. ‘My Neighbor Totoro’, ‘Spirited Away’). Focus on: soft, hand‑painted watercolor textures; warm pastel color palettes; gentle, diffused lighting; expressive, slightly oversized eyes (if characters are present); lush natural backgrounds with whimsical details; and an overall sense of wonder and nostalgia. Preserve the original composition and details, but reimagine every element—characters, objects, and scenery—with the characteristic Ghibli line quality and color harmony. Output the final image in high‑resolution PNG format`
       );
       form.append("n", "1");
       form.append("size", "1024x1024");
