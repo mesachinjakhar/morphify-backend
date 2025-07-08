@@ -47,7 +47,8 @@ export class GfpganProvider implements IProvider {
       input: {
         img: imageUrl,
         scale: 2, // upscaling factor
-        version: 1.4, // you can pin a version if needed
+        version:
+          "0fbacf7afc6c144e5be9767cff80f25aff23e52b0708f17e20f9879b2f21516c",
       },
     });
 
