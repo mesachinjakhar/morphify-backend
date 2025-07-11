@@ -46,14 +46,18 @@ export async function sendBrevoEmail(
     name: senderName,
   };
 
-  // Set recipient information
-  sendSmtpEmail.to = [
-    {
-      email: recipientEmail,
-      name: recipientName,
-    },
-  ];
+  // Construct the recipient object conditionally
+  const toRecipient: { email: string; name?: string } = {
+    email: recipientEmail,
+  };
 
+  // Only add the name property if recipientName is provided and is not an empty string
+  if (recipientName && recipientName.trim() !== "") {
+    toRecipient.name = recipientName;
+  }
+
+  // Set recipient information
+  sendSmtpEmail.to = [toRecipient];
   // Set email subject and HTML content
   sendSmtpEmail.subject = subject;
   sendSmtpEmail.htmlContent = htmlContent;
