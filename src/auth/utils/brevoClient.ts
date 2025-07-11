@@ -14,7 +14,7 @@ const apiInstance = new brevo.TransactionalEmailsApi();
 // It's highly recommended to store your API key securely in environment variables
 const apiKey = apiInstance.authentications["apiKey"];
 // Ensure BREVO_API_KEY is set in your .env file
-apiKey.apiKey = process.env.BREVO_API_KEY || "YOUR_BREVO_API_KEY_HERE";
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
 // --- Exported Email Sending Function ---
 /**
