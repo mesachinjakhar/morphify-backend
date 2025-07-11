@@ -41,6 +41,7 @@
     "@aws-sdk/client-ses": "^3.840.0",
     "@aws-sdk/s3-request-presigner": "^3.821.0",
     "@fal-ai/client": "^1.5.0",
+    "@getbrevo/brevo": "^2.5.0",
     "@prisma/client": "^6.8.2",
     "@sentry/cli": "^2.46.0",
     "@sentry/node": "^9.34.0",
@@ -66,6 +67,7 @@
     "rate-limiter-flexible": "^7.1.1",
     "replicate": "^1.0.1",
     "sharp": "^0.34.2",
+    "sib-api-v3-sdk": "^8.5.0",
     "uuid": "^11.1.0",
     "xss": "^1.0.15",
     "zod": "^3.25.42"

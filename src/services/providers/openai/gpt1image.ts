@@ -101,7 +101,7 @@ export class Gpt1ImageProvider implements IProvider {
       form.append("image", imageBuffer, { filename: "input_image.png" });
       form.append(
         "prompt",
-        `Ghiblify this photo: produce a hand‑painted, soft‑lit, watercolor‑textured scene reminiscent of Hayao Miyazaki’s studio, with rounded character features and lush natural backgrounds.`
+        "Apply a Studio Ghibli–style watercolor treatment: soft lighting, pastel palette, hand‑painted textures"
       );
       form.append("n", "1");
       form.append("size", "1024x1024");

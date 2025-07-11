@@ -6,7 +6,7 @@ import isEligibleForOtp from "../utils/isEligibleForOtp";
 import generateOtp from "../utils/generateOtp";
 import { isBefore } from "date-fns"; // for checking expiry
 import jwt from "jsonwebtoken";
-import { sendEmail } from "../utils/sesClient";
+import { sendBrevoEmail, sendOtpEmail } from "../utils/brevoClient";
 import redisClient from "../config/redis";
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -146,33 +146,11 @@ export async function sendEmailOtp(email: string) {
     },
   });
 
-  await sendEmail({
-    to: email,
-    subject: `Morphify AI: Your OTP is ${otp}`, // OTP in subject
-    htmlBody: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>Your Morphify AI OTP</title>
-      </head>
-  <body style="font-family: Arial, sans-serif; color: #333;">
-        <div style="max-width:600px; margin:auto; padding:20px;">
-          <h1 style="background: linear-gradient(90deg, #00AEEF, #8E2DE2, #FF0080); -webkit-background-clip: text; color: transparent;">
-                    Morphify AI
-          </h1>
-          <p>Hello,</p>
-          <p>Use the following one-time password (OTP) to verify your account & complete your sign-in:</p>
-          <h2 style="color:#8E2DE2; letter-spacing: 2px;">${otp}</h2>
-          <p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p>
-          <p>If you did not request this, you can safely ignore this email.</p>
-          <br/>
-          <p>Thanks,<br/>Morphify AI Team</p>
-        </div>
-      </body>
-    </html>
-  `,
-    textBody: `Morphify AI OTP: ${otp}. It is valid for 10 minutes. Please do not share this code with anyone.`,
+  sendOtpEmail({
+    toEmail: email,
+    toName: "John",
+    subject: `Morphify AI: Your OTP is ${otp}`,
+    parameter: otp, // This is your OTP or dynamic content
   });
 
   return {
@@ -231,33 +209,11 @@ export async function resendEmailOtp(email: string) {
     },
   });
 
-  await sendEmail({
-    to: email,
-    subject: `Morphify AI: Your OTP is ${otp}`, // OTP in subject
-    htmlBody: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>Your Morphify AI OTP</title>
-      </head>
-  <body style="font-family: Arial, sans-serif; color: #333;">
-        <div style="max-width:600px; margin:auto; padding:20px;">
-          <h1 style="background: linear-gradient(90deg, #00AEEF, #8E2DE2, #FF0080); -webkit-background-clip: text; color: transparent;">
-                    Morphify AI
-          </h1>
-          <p>Hello,</p>
-          <p>Use the following one-time password (OTP) to verify your account & complete your sign-in:</p>
-          <h2 style="color:#8E2DE2; letter-spacing: 2px;">${otp}</h2>
-          <p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p>
-          <p>If you did not request this, you can safely ignore this email.</p>
-          <br/>
-          <p>Thanks,<br/>Morphify AI Team</p>
-        </div>
-      </body>
-    </html>
-  `,
-    textBody: `Morphify AI OTP: ${otp}. It is valid for 10 minutes. Please do not share this code with anyone.`,
+  sendOtpEmail({
+    toEmail: email,
+    toName: "John",
+    subject: `Morphify AI: Your OTP is ${otp}`,
+    parameter: otp, // This is your OTP or dynamic content
   });
 
   return {
