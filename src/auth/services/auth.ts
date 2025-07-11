@@ -148,7 +148,6 @@ export async function sendEmailOtp(email: string) {
 
   sendOtpEmail({
     toEmail: email,
-    toName: "John",
     subject: `Morphify AI: Your OTP is ${otp}`,
     parameter: otp, // This is your OTP or dynamic content
   });
@@ -211,7 +210,6 @@ export async function resendEmailOtp(email: string) {
 
   sendOtpEmail({
     toEmail: email,
-    toName: "John",
     subject: `Morphify AI: Your OTP is ${otp}`,
     parameter: otp, // This is your OTP or dynamic content
   });

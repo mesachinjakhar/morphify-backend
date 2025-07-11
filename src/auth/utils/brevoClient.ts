@@ -129,7 +129,7 @@ if (require.main === module) {
 
 export async function sendOtpEmail(options: {
   toEmail: string;
-  toName: string;
+  toName?: string; // Made optional
   subject: string;
   parameter: string; // This will be your OTP
 }) {
@@ -167,7 +167,7 @@ export async function sendOtpEmail(options: {
       senderEmail,
       senderName,
       options.toEmail,
-      options.toName,
+      options.toName || "",
       options.subject,
       htmlContent
     );
