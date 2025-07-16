@@ -9,7 +9,7 @@ const redisClient = new Redis({
 });
 
 redisClient.on("connect", () => {
-  console.log("✅ Connected to Redis");
+  console.log("✅ Connectedd to Redis");
 });
 
 redisClient.on("error", (err) => {
