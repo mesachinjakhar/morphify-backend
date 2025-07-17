@@ -165,10 +165,32 @@ export class PhotoHandler {
       if (!model) {
         throw new CustomError("Ai Model not found", 500);
       }
+
+      let user = req.user;
+
+      if (!user) {
+        throw new CustomError("Ai Model not found", 500);
+      }
+
+      let userId = user.id;
+
+      let userModels = await prisma.model.findMany({
+        where: { userId: userId },
+      });
+
+      if (userModels.length > 0) {
+        res.status(200).json({
+          status: "success",
+          message: "cost calculated successfully",
+          data: { cost: model.mstarsCostPerCall },
+        });
+        return;
+      }
+
       res.status(200).json({
         status: "success",
         message: "cost calculated successfully",
-        data: { cost: model.mstarsCostPerCall },
+        data: { cost: 1 },
       });
       return;
     }

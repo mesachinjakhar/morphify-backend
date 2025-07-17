@@ -19,6 +19,6 @@ router.post(
 );
 
 router.get("/ai-filters", photoHandler.getAllAiFilters);
-router.post("/cost", photoHandler.getCost);
+router.post("/cost", authMiddleware, photoHandler.getCost);
 
 export default router;
