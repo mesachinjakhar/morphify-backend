@@ -38,8 +38,19 @@ class MstarManager {
       let currentTotalModels = await prisma.model.findMany({
         where: { userId: userId },
       });
-      if (currentTotalModels.length! > 0) {
-        1;
+      if (currentTotalModels.length === 0) {
+        return 1;
+      } else {
+        const model = await this.prisma.aiModel.findUnique({
+          where: { id: aiModelId },
+        });
+
+        if (!model) {
+          throw new Error("AI model not found.");
+        }
+
+        let totalCost = model.mstarsCostPerCall * photosToBeGenerated;
+        return totalCost;
       }
     }
 
