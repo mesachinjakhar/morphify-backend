@@ -169,7 +169,7 @@ export class PhotoHandler {
       let user = req.user;
 
       if (!user) {
-        throw new CustomError("Ai Model not found", 500);
+        throw new CustomError("User not found", 500);
       }
 
       let userId = user.id;
@@ -195,6 +195,14 @@ export class PhotoHandler {
       return;
     }
 
+    let user = req.user;
+
+    if (!user) {
+      throw new CustomError("User not found", 500);
+    }
+
+    let userId = user.id;
+
     if (!aiFilterId && !packId) {
       throw new CustomError("Either provide Ai Filter Id or Pack id", 400);
     }
@@ -213,7 +221,12 @@ export class PhotoHandler {
       }
       const modelId = aiFilter.aiModelId;
       const mstarManagar = new MstarManager(prisma);
-      const cost = await mstarManagar.calculateCost(modelId, num, aiFilterId);
+      const cost = await mstarManagar.calculateCost(
+        userId,
+        modelId,
+        num,
+        aiFilterId
+      );
       res.status(200).json({
         status: "success",
         message: "cost calculated successfully",
@@ -229,7 +242,7 @@ export class PhotoHandler {
       }
       const modelId = pack.aiModelId;
       const mstarManagar = new MstarManager(prisma);
-      const cost = await mstarManagar.calculateCost(modelId, num);
+      const cost = await mstarManagar.calculateCost(userId, modelId, num);
       res.status(200).json({
         status: "success",
         message: "cost calculated successfully",

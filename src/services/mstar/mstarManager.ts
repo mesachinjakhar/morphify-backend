@@ -29,10 +29,20 @@ class MstarManager {
    * Calculates the cost of a service. (This function remains the same).
    */
   public async calculateCost(
+    userId: string,
     aiModelId: string,
     photosToBeGenerated: number,
     aiFilterId?: string
   ): Promise<number> {
+    if (aiModelId === "f640f8fe-7bb2-4bdf-bf97-9fe35398690d") {
+      let currentTotalModels = await prisma.model.findMany({
+        where: { userId: userId },
+      });
+      if (currentTotalModels.length! > 0) {
+        1;
+      }
+    }
+
     const model = await this.prisma.aiModel.findUnique({
       where: { id: aiModelId },
     });
@@ -69,6 +79,7 @@ class MstarManager {
   ): Promise<MstarTransaction> {
     let photosToBeGenerated = numOfPotos;
     const cost = await this.calculateCost(
+      userId,
       aiModelId,
       photosToBeGenerated,
       aiFilterId
