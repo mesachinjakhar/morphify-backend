@@ -26,16 +26,15 @@ async function main() {
   });
 
   await prisma.iapProduct.upsert({
-    where: { productId: "no_ads_monthly" },
+    where: { productId: "mstars_29" },
     update: {},
     create: {
-      productId: "no_ads_monthly",
-      name: "No Ads Monthly",
-      credits: 0, // subscriptions do not grant credits
+      productId: "mstars_29",
+      name: "29 Mstars Pack",
+      credits: 29, // subscriptions do not grant credits
       active: true,
     },
   });
-
 }
 
 main()
